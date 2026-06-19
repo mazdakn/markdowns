@@ -90,6 +90,9 @@ When designing your policy architecture, it is vital to account for how a tier b
 #### Natively Bridging the Standards Gap
 A significant benefit of Calico architecture is its native compatibility with Kubernetes standards. Modern Calico deployments automatically ingest cluster-wide ClusterNetworkPolicy schemas, mapping their implicit admin and baseline execution spaces into native Calico tiers. This ensures that you can design an open-source standard architecture while still taking advantage of Calico's highly optimized, high-performance eBPF or iptables data plane enforcement.
 
+#### Per-Tier RBAC: Delegating Ownership Without Sharing Keys
+Because Calico models tiers as first-class Kubernetes resources, it lets you set RBAC access on a *per-tier* basis—a level of granularity the native API's all-or-nothing CRD access can't express. Access hinges on two grants, expressed through ordinary `Role` and `ClusterRole` objects: the user needs `get` on the `tiers` resource for the tier in question, plus access to that tier's policies through the pseudo-resources `tier.networkpolicies` and `tier.globalnetworkpolicies`. The `resourceNames` field then scopes exactly how far that access reaches—a blank value spans every tier, `security.*` grants the verbs (`get`, `list`, `create`, `update`, `delete`) across all policies in the `security` tier, and `security.block-metadata-api` pins a single policy. The result is the separation of concerns this model promises: the InfoSec team can fully own the `security` tier while developers are confined to the `default` tier, each team completely isolated from the others' configurations. The full set of verbs and example manifests is documented in [Calico's RBAC for tiered policy guide](https://docs.tigera.io/calico/latest/network-policy/policy-tiers/rbac-tiered-policies).
+
 
 ## The Complexity Trap: The Real-World Challenges of Tiered Policies
 
