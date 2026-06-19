@@ -52,7 +52,7 @@ This API completely shifts how cluster administrators manage traffic by introduc
 │     Scope: Cluster-wide                                │  ◄── Strict Guardrails (InfoSec)
 │     Actions: Allow, Deny, Pass                         │
 └───────────────────────────┬────────────────────────────┘
-                            │ (If Pass / No Match)  
+                            │ (If Pass or No Match)  
                             ▼  
 ┌────────────────────────────────────────────────────────┐
 │ 2. Standard NetworkPolicy                              │
@@ -64,7 +64,7 @@ This API completely shifts how cluster administrators manage traffic by introduc
 ┌────────────────────────────────────────────────────────┐
 │ 3. ClusterNetworkPolicy (Baseline Tier)                │
 │     Scope: Cluster-wide                                │  ◄── Default Fallbacks (Platform)
-│     Actions: Allow, Deny, (Pass ?)                     │
+│     Actions: Allow, Deny, Pass                         │
 └────────────────────────────────────────────────────────┘
 ```
 
@@ -93,7 +93,7 @@ When designing your policy architecture, it is vital to account for how a tier b
 A significant benefit of Calico architecture is its native compatibility with Kubernetes standards. Modern Calico deployments automatically ingest cluster-wide ClusterNetworkPolicy schemas, mapping their implicit admin and baseline execution spaces into native Calico tiers. This ensures that you can design an open-source standard architecture while still taking advantage of Calico's highly optimized, high-performance eBPF or iptables data plane enforcement.
 
 #### Per-Tier RBAC: Delegating Ownership Without Sharing Keys
-Because Calico models tiers as first-class Kubernetes resources, it lets you set RBAC access on a *per-tier* basis—a level of granularity the native API's all-or-nothing CRD access can't express. Access hinges on two grants, expressed through ordinary `Role` and `ClusterRole` objects: the user needs `get` on the `tiers` resource for the tier in question, plus access to that tier's policies through the pseudo-resources `tier.networkpolicies` and `tier.globalnetworkpolicies`. The `resourceNames` field then scopes exactly how far that access reaches—a blank value spans every tier, `security.*` grants the verbs (`get`, `list`, `create`, `update`, `delete`) across all policies in the `security` tier, and `security.block-metadata-api` pins a single policy. The result is the separation of concerns this model promises: the InfoSec team can fully own the `security` tier while developers are confined to the `default` tier, each team completely isolated from the others' configurations. The full set of verbs and example manifests is documented in [Calico's RBAC for tiered policy guide](https://docs.tigera.io/calico/latest/network-policy/policy-tiers/rbac-tiered-policies).
+Because Calico models tiers as first-class Kubernetes resources, it lets you set RBAC access on a *per-tier* basis—a level of granularity the native API's all-or-nothing CRD access can't express. Access hinges on two grants, expressed through ordinary `Role` and `ClusterRole` objects: the user needs `get` on the `tiers` resource for the tier in question, plus access to that tier's policies through the pseudo-resources `tier.networkpolicies` and `tier.globalnetworkpolicies`. The `resourceNames` field then scopes exactly how far that access reaches—a blank value spans every tier, `security.*` grants the verbs (`get`, `list`, `create`, `update`, `delete`) across all policies in the `security` tier, and `security.block-metadata-api` pins a single policy. The result is the separation of concerns this model promises: the InfoSec team can fully own the `security` tier while developers are confined to the `default` tier, each team completely isolated from the others' configurations.
 
 ## The Complexity Trap: The Real-World Challenges of Tiered Policies
 
@@ -129,12 +129,6 @@ To build a stable cluster defense layout, you shouldn't create a dozen chaotic t
 | **security** | 100 | InfoSec Team | Global threat mitigation & absolute boundaries. | Block all log4j vectors; quarantine compromised namespaces; block cloud metadata APIs. |
 | **platform** | 500 | Platform Eng | Infrastructure logging, metrics, and mesh stability. | Ensure Prometheus can scrape endpoints cluster-wide; allow standard CoreDNS egress. |
 | **default** | 1,000,000 | App Developers | Microservice-to-microservice functional connectivity. | Allow frontend pod to communicate with backend pod on port 8080. |
-
-## Operational Governance: Protecting the Tiers
-
-Creating layers is pointless if a developer can accidentally delete your security tier. To make tiered policies functional in production, you must back them up with rigid Kubernetes Role-Based Access Control (RBAC).
-
-You should restrict access to the CRD endpoints so that only your InfoSec team's CI/CD pipeline has access to write resources inside resourceNames: ["security"]. Developers should only be granted access to the default tier or standard namespace-scoped NetworkPolicies.
 
 ## Summary: Linear Traffic Control
 
