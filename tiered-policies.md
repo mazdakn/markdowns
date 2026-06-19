@@ -25,7 +25,7 @@ To solve these scaling pain points, we have to move away from a flat network arc
 1. **Global, Cluster-Wide Scope:** To stop copy-pasting rules, administrators need a policy type that natively operates at the cluster level rather than the namespace level. This allows a single manifest to apply to all current and future namespaces automatically, eliminating the risk of "configuration drift" and ensuring zero-day protection for new workloads.
 2. **Separation of Concerns (RBAC-Gated Tiers):** Security, platform, and application teams need their own distinct logical "zones" or tiers to deploy rules. These tiers must be strictly gated by Role-Based Access Control (RBAC) so a developer modifying their application namespace cannot alter or override a higher-priority platform or security tier.
 3. **Deterministic, Top-Down Evaluation:** The firewall engine must evaluate these tiers sequentially. Traffic must pass through the highest priority tier (e.g., Security) before it ever reaches a lower tier (e.g., Application).
-4. **The Pass Action Logic:** In a standard additive firewall, a rule can usually only say Yes (Allow) or No (Deny). If a security team wants to create a global exception or simply declare that a specific type of traffic isn't a threat, they need a third option: Pass. 
+4. **The Pass Action Logic:** In a standard additive firewall, a rule can usually only say Yes (Allow) or No (Deny). If a security team wants to create a global exception or simply declare that a specific type of traffic isn't a threat, they need a third option: Pass.
 
 ### The Magic of the Pass Action
 
@@ -46,9 +46,10 @@ The API helps cluster administrators manage traffic by adding four critical feat
 
 This API completely shifts how cluster administrators manage traffic by introducing a native, three-tiered evaluation hierarchy:
 
+```
 ┌────────────────────────────────────────────────────────┐
 │ 1. ClusterNetworkPolicy (Admin Tier)                   │
-│     Scope: Cluster-wide                                │  ◄── Strict Guardrails (Infosec)
+│     Scope: Cluster-wide                                │  ◄── Strict Guardrails (InfoSec)
 │     Actions: Allow, Deny, Pass                         │
 └───────────────────────────┬────────────────────────────┘
                             │ (If Pass / No Match)  
@@ -62,9 +63,10 @@ This API completely shifts how cluster administrators manage traffic by introduc
                             ▼  
 ┌────────────────────────────────────────────────────────┐
 │ 3. ClusterNetworkPolicy (Baseline Tier)                │
-│     Scope: Cluster-Wide                                │  ◄── Default Fallbacks (Platform)
+│     Scope: Cluster-wide                                │  ◄── Default Fallbacks (Platform)
 │     Actions: Allow, Deny, (Pass ?)                     │
 └────────────────────────────────────────────────────────┘
+```
 
 **The Top Layer: ClusterNetworkPolicy (Admin Tier)**: This is the high-priority tier controlled by cluster administrators and InfoSec. Rules here are evaluated first. It supports explicit Allow, Deny, and Pass actions. If the admin writes a Deny rule here, no developer manifest can override it. If they write a Pass rule, evaluation trickles down to the next tier.
 
@@ -93,7 +95,6 @@ A significant benefit of Calico architecture is its native compatibility with Ku
 #### Per-Tier RBAC: Delegating Ownership Without Sharing Keys
 Because Calico models tiers as first-class Kubernetes resources, it lets you set RBAC access on a *per-tier* basis—a level of granularity the native API's all-or-nothing CRD access can't express. Access hinges on two grants, expressed through ordinary `Role` and `ClusterRole` objects: the user needs `get` on the `tiers` resource for the tier in question, plus access to that tier's policies through the pseudo-resources `tier.networkpolicies` and `tier.globalnetworkpolicies`. The `resourceNames` field then scopes exactly how far that access reaches—a blank value spans every tier, `security.*` grants the verbs (`get`, `list`, `create`, `update`, `delete`) across all policies in the `security` tier, and `security.block-metadata-api` pins a single policy. The result is the separation of concerns this model promises: the InfoSec team can fully own the `security` tier while developers are confined to the `default` tier, each team completely isolated from the others' configurations. The full set of verbs and example manifests is documented in [Calico's RBAC for tiered policy guide](https://docs.tigera.io/calico/latest/network-policy/policy-tiers/rbac-tiered-policies).
 
-
 ## The Complexity Trap: The Real-World Challenges of Tiered Policies
 
 As powerful as policy tiers are for establishing a clear hierarchy of trust, they introduce a distinct operational paradigm shift. Moving from a flat rule plane to a multi-layered execution environment solves the visibility and guardrail problems, but it introduces a brand-new threat vector: cognitive complexity.
@@ -110,7 +111,7 @@ Because each `Pass` action pushes evaluation to the next subsequent layer withou
 
 The most insidious challenge in a tiered environment is policy shadowing—specifically, when a rule in a higher tier completely neutralizes or masks a valid intent in a lower tier without throwing any syntax errors.
 
-This generally happens when a broad rule in a high precedence tier like admin tier, impacts on application traffic. As an example, an upstream team (like InfoSec) might deploy a global compliance policy intended to simply audit or log a specific type of traffic. However, if they forget to terminate that policy with an explicit Pass action, they will unintentionally hijack that pod's traffic lifecycle. The packet will be cleanly dropped at the end of the Security tier, completely starving out the developer's downstream application rules without throwing an explicit syntax error during deployment.
+This generally happens when a broad rule in a high precedence tier like the admin tier affects application traffic. As an example, an upstream team (like InfoSec) might deploy a global compliance policy intended to simply audit or log a specific type of traffic. However, if they forget to terminate that policy with an explicit Pass action, they will unintentionally hijack that pod's traffic lifecycle. The packet will be cleanly dropped at the end of the Security tier, completely starving out the developer's downstream application rules without throwing an explicit syntax error during deployment.
 
 ### Strategies to Tame the Complexity
 
@@ -125,7 +126,7 @@ To build a stable cluster defense layout, you shouldn't create a dozen chaotic t
 
 | Tier Name | Order | Owner | Core Responsibility | Example Use Case |
 | :---- | :---- | :---- | :---- | :---- |
-| **security** | 100 | Infosec Team | Global threat mitigation & absolute boundaries. | Block all log4j vectors; quarantine compromised namespaces; block cloud metadata APIs. |
+| **security** | 100 | InfoSec Team | Global threat mitigation & absolute boundaries. | Block all log4j vectors; quarantine compromised namespaces; block cloud metadata APIs. |
 | **platform** | 500 | Platform Eng | Infrastructure logging, metrics, and mesh stability. | Ensure Prometheus can scrape endpoints cluster-wide; allow standard CoreDNS egress. |
 | **default** | 1,000,000 | App Developers | Microservice-to-microservice functional connectivity. | Allow frontend pod to communicate with backend pod on port 8080. |
 
@@ -133,10 +134,10 @@ To build a stable cluster defense layout, you shouldn't create a dozen chaotic t
 
 Creating layers is pointless if a developer can accidentally delete your security tier. To make tiered policies functional in production, you must back them up with rigid Kubernetes Role-Based Access Control (RBAC).
 
-You should restrict access to the CRD endpoints so that only your Infosec team's CI/CD pipeline has access to write resources inside resourceNames: ["security"]. Developers should only be granted access to the default tier or standard namespace-scoped NetworkPolicies.
+You should restrict access to the CRD endpoints so that only your InfoSec team's CI/CD pipeline has access to write resources inside resourceNames: ["security"]. Developers should only be granted access to the default tier or standard namespace-scoped NetworkPolicies.
 
 ## Summary: Linear Traffic Control
 
 Transitioning from flat network policies to tiered architectures is the cloud-native equivalent of moving from a chaotic, single-file legacy firewall script to a clean, structured enterprise firewall zone layout.
 
-By separating cluster security guardrails from application development agility, tiered policies deliver the best of both worlds: infosec compliance teams can sleep soundly knowing their boundaries cannot be bypassed, while application developers retain full control over their microservice configurations without bureaucracy.
+By separating cluster security guardrails from application development agility, tiered policies deliver the best of both worlds: InfoSec compliance teams can sleep soundly knowing their boundaries cannot be bypassed, while application developers retain full control over their microservice configurations without bureaucracy.
