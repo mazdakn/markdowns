@@ -35,7 +35,7 @@ Think of Pass as a delegated hand-off. When a packet matches a rule with a Pass 
 
 ## **The Kubernetes Native Answer: ClusterNetworkPolicy**
 
-Recognizing these scalability constraints, the Kubernetes Network Policy API Working Group developed a native, multi-layered solution:, introducing **ClusterNetworkPolicy**.
+Recognizing these scalability constraints, the Kubernetes Network Policy API Working Group developed a native, multi-layered solution: **ClusterNetworkPolicy**.
 
 The API helps cluster administrators manage traffic by adding four critical features:
 
@@ -70,7 +70,7 @@ This API completely shifts how cluster administrators manage traffic by introduc
 
 **The Middle Layer: Standard NetworkPolicy:** This is the traditional application-developer tier. It only kicks in if traffic wasn't explicitly allowed or denied by the ClusterNetworkPolicy in the Admin tier above it. This keeps developers agile, letting them connect their microservices without needing admin intervention.
 
-**The Bottom Layer: ClusterNetworkPolicy (Baseline Tier):** This is a unique, cluster-scoped single resource meant for default fallbacks. It acts as the safety net after developer policies are checked. For example, if a developer forgets to secure their pod, this policy can enforce a default cluster-wide posture like "if no developer policy matches this traffic, deny all intra-cluster traffic by default."
+**The Bottom Layer: ClusterNetworkPolicy (Baseline Tier):** This is the cluster-scoped Baseline tier, meant for default fallbacks. It acts as the safety net after developer policies are checked. For example, if a developer forgets to secure their pod, this policy can enforce a default cluster-wide posture like "if no developer policy matches this traffic, deny all intra-cluster traffic by default."
 
 All these create a native, layered approach to security which means you no longer have to choose between absolute security and developer velocity—the API enforces a structured chain of command natively.
 
@@ -83,7 +83,7 @@ While the native Kubernetes APIs introduce a great Three-layer model, enterprise
 Calico organizes network policies into an ordered list of Tiers. Traffic is evaluated sequentially through these tiers. Within a hierarchy of trust, a typical enterprise stack maps directly to team responsibilities:$$\\text{Security Tier} \\longrightarrow \\text{Platform Tier} \\longrightarrow \\text{Application Tier}$$
 
 #### **The Nuance of Default Actions: Native vs. Calico**
-When designing your policy architecture, it is vital to account for how a tier behaves when a packet fails to match any explicitly defined rules inside it. Under the native Kubernetes ClusterNetworkPolicy specification, the default behavior at the end of a tier is implicitly Pass, gracefully moving the packet along to the next layer of evaluation. Calico tiers handle this end-of-tier lifecycle differently: by default, if a packet reaches the end of a Calico tier without a match, it hits an implicit Deny block. However, Calico gives administrators the flexibility to explicitly override this behavior on a per-tier basis, allowing the default action to be set to either Deny or Pass depending on whether you want a strict isolation barrier or an open transit corridor.
+When designing your policy architecture, it is vital to account for how a tier behaves when a packet fails to match any explicitly defined rules inside it. Under the native Kubernetes ClusterNetworkPolicy specification, the default behavior at the end of a tier is implicitly Pass, gracefully moving the packet along to the next layer of evaluation. Calico tiers handle this end-of-tier lifecycle differently. The implicit Deny only applies when the workload is selected by at least one policy in that tier but matches none of that tier's rules—in that case the packet hits an implicit Deny. Crucially, if *no* policy in the tier selects the workload at all, the tier is simply skipped and the packet passes through to the next tier; it is not dropped. Calico also gives administrators the flexibility to override this end-of-tier behavior on a per-tier basis, setting the default action to either Deny or Pass depending on whether you want a strict isolation barrier or an open transit corridor.
 
 #### **Natively Bridging the Standards Gap**
 A significant benefit of Calico architecture is its native compatibility with Kubernetes standards. Modern Calico deployments automatically ingest cluster-wide ClusterNetworkPolicy schemas, mapping their implicit admin and baseline execution spaces into native Calico tiers. This ensures that you can design an open-source standard architecture while still taking advantage of Calico's highly optimized, high-performance eBPF or iptables data plane enforcement.
