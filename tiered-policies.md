@@ -74,6 +74,8 @@ This API completely shifts how cluster administrators manage traffic by introduc
 
 All these create a native, layered approach to security which means you no longer have to choose between absolute security and developer velocity—the API enforces a structured chain of command natively.
 
+Critically, the separation of concerns is enforced by Kubernetes itself. Because `ClusterNetworkPolicy` is delivered as a new Custom Resource Definition (CRD) rather than a tweak to the existing `NetworkPolicy` type, standard Kubernetes RBAC governs who can interact with it. The Admin and Baseline tiers live in a distinct, cluster-scoped resource, so administrators can grant `create`, `update`, and `delete` verbs on `ClusterNetworkPolicy` to the security and platform teams alone, while developers keep their existing access to namespace-scoped `NetworkPolicy` objects. No bespoke admission controller or external tooling is required—the same RBAC engine that already gates every other API resource keeps the guardrail tier off-limits to application teams.
+
 Calico added support for ClusterNetworkPolicy API in release v3.32.
 
 ## Industry-Grade Tiering: Calico Policy Tiers
