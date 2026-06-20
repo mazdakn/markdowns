@@ -104,10 +104,10 @@ If you are planning to roll out tiers across your production clusters, you need 
 
 To mitigate these challenges before they impact your velocity, implement these two operational guardrails:
 * **Enforce Strict Hierarchy Ownership:** Use RBAC to ensure that only the Security Team can modify the security tier, only Platform Eng can modify the platform tier, and developers are locked into the default tier.
+
 * **Keep Tiers Lean:** Stick to the "Rule of Three" (Security → Platform → Application). If a team requests a fourth or fifth tier, challenge the requirement—most network architectures can and *should* fit into these three clean structural buckets.
 
 ## Practical Architecture: Designing Your Tiers
-
 To build a stable cluster defense layout, you shouldn't create a dozen chaotic tiers. The industry "gold standard" involves dividing ownership into three distinct buckets:
 
 | Tier Name | Order | Owner | Core Responsibility | Example Use Case |
@@ -117,7 +117,6 @@ To build a stable cluster defense layout, you shouldn't create a dozen chaotic t
 | **default** | 1,000,000 | App Developers | Microservice-to-microservice functional connectivity. | Allow frontend pod to communicate with backend pod on port 8080. |
 
 ## Summary: Linear Traffic Control
-
 Transitioning from flat network policies to tiered architectures is the cloud-native equivalent of moving from a chaotic, single-file legacy firewall script to a clean, structured enterprise firewall zone layout.
 
 By separating cluster security guardrails from application development agility, tiered policies deliver the best of both worlds: InfoSec compliance teams can sleep soundly knowing their boundaries cannot be bypassed, while application developers retain full control over their microservice configurations without bureaucracy.
