@@ -116,6 +116,9 @@ To build a stable cluster defense layout, you shouldn't create a dozen chaotic t
 | **Platform Engineers** | Infrastructure logging, metrics, and mesh stability. | Ensure Prometheus can scrape endpoints cluster-wide; allow standard CoreDNS egress. |
 | **Developers** | Microservice-to-microservice functional connectivity. | Allow frontend pod to communicate with backend pod on port 8080. |
 
+#### Kubernetes native model
+The native kubernetes model structures cluster security into a definitive three-part stack. The `ClusterNetworkPolicy` resources in Admin tier are owned by InfoSec to enforce non-negotiable compliance guardrails, such as blocking access to cloud metadata endpoints or isolating regulated payment namespaces, using strict Deny rules that cannot be bypassed. Appliction developer teams have full autonomy to write standard, namespace-scoped NetworkPolicy objects for application-specific microsegmentation without fear of disrupting global parameters. Finally, `ClusterNetworkPolicy` resources in Baseline tier are managed by both security and platform teams to apply global infrastructure defaults (like allowing CoreDNS traffic) and establish a "fail-closed" cluster-wide Default-Deny safety net. This ensures that any newly deployed microservice lacking an explicit developer policy is safely isolated by default rather than left completely exposed.
+
 ## Summary: Linear Traffic Control
 Transitioning from flat network policies to tiered architectures is the cloud-native equivalent of moving from a chaotic, single-file legacy firewall script to a clean, structured enterprise firewall zone layout.
 
