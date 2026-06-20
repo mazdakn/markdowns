@@ -108,13 +108,13 @@ To mitigate these challenges before they impact your velocity, implement these t
 * **Keep Tiers Lean:** Stick to the "Rule of Three" (Security → Platform → Application). If a team requests a fourth or fifth tier, challenge the requirement—most network architectures can and *should* fit into these three clean structural buckets.
 
 ## Practical Architecture: Designing Your Tiers
-To build a stable cluster defense layout, you shouldn't create a dozen chaotic tiers. The industry "gold standard" involves dividing ownership into three distinct buckets:
+To build a stable cluster defense layout, you shouldn't create a dozen chaotic tiers. The industry "gold standard" involves dividing ownership into distinct personas:
 
-| Tier Name | Order | Owner | Core Responsibility | Example Use Case |
-| :---- | :---- | :---- | :---- | :---- |
-| **security** | 100 | InfoSec Team | Global threat mitigation & absolute boundaries. | Block all log4j vectors; quarantine compromised namespaces; block cloud metadata APIs. |
-| **platform** | 500 | Platform Eng | Infrastructure logging, metrics, and mesh stability. | Ensure Prometheus can scrape endpoints cluster-wide; allow standard CoreDNS egress. |
-| **default** | 1,000,000 | App Developers | Microservice-to-microservice functional connectivity. | Allow frontend pod to communicate with backend pod on port 8080. |
+| Persona | Core Responsibility | Example Use Case |
+| :---- | :---- | :---- |
+| **Security Engineers** | Global threat mitigation & absolute boundaries. | Block all log4j vectors; quarantine compromised namespaces; block cloud metadata APIs. |
+| **Platform Engineers** | Infrastructure logging, metrics, and mesh stability. | Ensure Prometheus can scrape endpoints cluster-wide; allow standard CoreDNS egress. |
+| **Developers** | Microservice-to-microservice functional connectivity. | Allow frontend pod to communicate with backend pod on port 8080. |
 
 ## Summary: Linear Traffic Control
 Transitioning from flat network policies to tiered architectures is the cloud-native equivalent of moving from a chaotic, single-file legacy firewall script to a clean, structured enterprise firewall zone layout.
