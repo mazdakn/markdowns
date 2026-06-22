@@ -90,7 +90,7 @@ order ──► evaluated lowest first                       you define as many 
 │ Tier (order: 100)            RBAC owner: e.g. Security         │
 │   ├─ policy  (order: 10) ─┐                                    │
 │   ├─ policy  (order: 20)  │  rules evaluated by policy order   │
-│   └─ ...                  ▼  → Allow | Deny (terminal)         │
+│   └─ ...                  ▼  → Allow | Deny | Pass             │
 │   end-of-tier default: Pass | Deny  (you choose, per tier)     │
 └───────────────────────────────┬────────────────────────────────┘
                                 │ (Pass, or no policy selects the workload)
