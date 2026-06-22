@@ -145,7 +145,7 @@ To build a stable cluster defense layout, you shouldn't create a dozen chaotic t
 
 | Persona | Core Responsibility | Example Use Case |
 | :---- | :---- | :---- |
-| **Security Engineers** | Global threat mitigation & absolute boundaries. | Block all log4j vectors; quarantine compromised namespaces; block cloud metadata APIs. |
+| **Security Engineers** | Global threat mitigation & absolute boundaries. | Block Log4Shell callback egress; quarantine compromised namespaces; block cloud metadata APIs. |
 | **Platform Engineers** | Infrastructure logging, metrics, and mesh stability. | Ensure Prometheus can scrape endpoints cluster-wide; allow standard CoreDNS egress. |
 | **Developers** | Microservice-to-microservice functional connectivity. | Allow frontend pod to communicate with backend pod on port 8080. |
 
