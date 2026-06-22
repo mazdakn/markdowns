@@ -56,7 +56,7 @@ This API completely shifts how cluster administrators manage traffic by introduc
 ┌────────────────────────────────────────────────────────┐
 │ 2. Standard NetworkPolicy                              │
 │     Scope: Namespace                                   │  ◄── Application Logic (Developers)
-│     Actions: Implicit Allow                            │
+│     Actions: Allow-only (implicit deny)                │
 └───────────────────────────┬────────────────────────────┘
                             │ (If No Match)  
                             ▼  
@@ -81,7 +81,7 @@ Calico added support for ClusterNetworkPolicy API in release v3.32.
 
 While the native Kubernetes APIs introduce a great Three-layer model, enterprise environments often require finer granularity. Calico expands on this concept by offering **Policy Tiers**—allowing you to design an arbitrary number of custom evaluation layers. In Calico, every network policy lives within a designated Tier, and traffic is evaluated through those tiers sequentially, in ascending order of each tier's assigned order value (lowest integer first). Within a hierarchy of trust, a typical enterprise stack maps directly to team responsibilities: Security Tier → Platform Tier → Application Tier.
 
-Rather than a fixed set of layers, Calico gives you an open-ended, ordered stack of tiers that you name, order, and own. Each tier holds its own ordered list of policies and ends in a configurable default action; evaluation flows top-down until a rule (or a tier default) returns a terminal Allow/Deny, while a Pass cascades to the next tier:
+Each tier holds its own ordered list of policies and ends in a configurable default action; evaluation flows top-down until a rule (or a tier default) returns a terminal Allow/Deny, while a Pass cascades to the next tier:
 
 ```
 order ──► evaluated lowest first                       you define as many tiers as you need
@@ -118,7 +118,7 @@ The shape is the point: where the native model hands you exactly three fixed lay
 When designing your policy architecture, it is vital to account for how a tier behaves when a packet fails to match any explicitly defined rules inside it. Under the native Kubernetes ClusterNetworkPolicy specification, the default behavior at the end of a tier is implicitly Pass, gracefully moving the packet along to the next layer of evaluation. Calico tiers handle this end-of-tier lifecycle differently. The implicit Deny only applies when the workload is selected by at least one policy in that tier but matches none of that tier's rules—in that case the packet hits an implicit Deny. Crucially, if *no* policy in the tier selects the workload at all, the tier is simply skipped and the packet passes through to the next tier; it is not dropped. Calico also gives administrators the flexibility to override this end-of-tier behavior on a per-tier basis, setting the default action to either Deny or Pass depending on whether you want a strict isolation barrier or an open transit corridor.
 
 #### Natively Bridging the Standards Gap
-A significant benefit of Calico architecture is its native compatibility with Kubernetes standards. Modern Calico deployments automatically ingest cluster-wide ClusterNetworkPolicy schemas, mapping their implicit admin and baseline execution spaces into native Calico tiers. For example, Admin-tier ClusterNetworkPolicy resources land in an auto-created `kube-admin` tier (order `1000`, default action `Pass`), so they slot into Calico's evaluation order without any manual wiring. This ensures that you can design an open-source standard architecture while still taking advantage of Calico's highly optimized data plane enforcement.
+A significant benefit of Calico architecture is its native compatibility with Kubernetes standards. Modern Calico deployments automatically ingest cluster-wide ClusterNetworkPolicy schemas, mapping their implicit admin and baseline tiers into native Calico tiers. For example, Admin-tier ClusterNetworkPolicy resources land in an auto-created `kube-admin` tier (order `1000`, default action `Pass`), so they slot into Calico's evaluation order without any manual wiring. This ensures that you can design an open-source standard architecture while still taking advantage of Calico's highly optimized data plane enforcement.
 
 #### Per-Tier RBAC: Delegating Ownership Without Sharing Keys
 Because Calico models tiers as first-class Kubernetes resources, it lets you set RBAC access on a *per-tier* basis—a level of granularity the native API's all-or-nothing CRD access can't express. The result is the separation of concerns this model promises: the InfoSec team can fully own the `security` tier while developers are confined to the `default` tier, each team completely isolated from the others' configurations.
@@ -139,7 +139,7 @@ To mitigate these challenges before they impact your velocity, implement these t
 * **Keep Tiers Lean:** Stick to the "Rule of Three" (Security → Platform → Application). If a team requests a fourth or fifth tier, challenge the requirement—most network architectures can and *should* fit into these three clean structural buckets.
 
 ## Practical Architecture: Designing Your Tiers
-To build a stable cluster defense layout, you shouldn't create a dozen chaotic tiers. The industry "gold standard" involves dividing ownership into distinct personas:
+To build a stable cluster defense layout, you shouldn't create a dozen chaotic tiers. The industry "gold standard" involves dividing ownership into distinct personas, with each persona owning its own tier:
 
 | Persona | Core Responsibility | Example Use Case |
 | :---- | :---- | :---- |
@@ -148,7 +148,10 @@ To build a stable cluster defense layout, you shouldn't create a dozen chaotic t
 | **Developers** | Microservice-to-microservice functional connectivity. | Allow frontend pod to communicate with backend pod on port 8080. |
 
 #### Kubernetes native model
-The native kubernetes model structures cluster security into a definitive three-part stack. The `ClusterNetworkPolicy` resources in Admin tier are owned by InfoSec to enforce non-negotiable compliance guardrails, such as blocking access to cloud metadata endpoints or isolating regulated payment namespaces, using strict Deny rules that cannot be bypassed. Appliction developer teams have full autonomy to write standard, namespace-scoped NetworkPolicy objects for application-specific microsegmentation without fear of disrupting global parameters. Finally, `ClusterNetworkPolicy` resources in Baseline tier are managed by both security and platform teams to apply global infrastructure defaults (like allowing CoreDNS traffic) and establish a "fail-closed" cluster-wide Default-Deny safety net. This ensures that any newly deployed microservice lacking an explicit developer policy is safely isolated by default rather than left completely exposed.
+The native Kubernetes model structures cluster security into a definitive three-part stack. The `ClusterNetworkPolicy` resources in the Admin tier are owned by InfoSec to enforce non-negotiable compliance guardrails, such as blocking access to cloud metadata endpoints or isolating regulated payment namespaces, using strict Deny rules that cannot be bypassed. Application developer teams have full autonomy to write standard, namespace-scoped NetworkPolicy objects for application-specific microsegmentation without fear of disrupting global parameters. Finally, `ClusterNetworkPolicy` resources in the Baseline tier are managed by both security and platform teams to apply global infrastructure defaults (like allowing CoreDNS traffic) and establish a "fail-closed" cluster-wide Default-Deny safety net. This ensures that any newly deployed microservice lacking an explicit developer policy is safely isolated by default rather than left completely exposed.
+
+#### Calico model
+Calico maps the same three personas onto named, RBAC-gated tiers instead of fixed resource types. The InfoSec team owns a low-order `security` tier carrying the non-negotiable guardrails—blocking cloud metadata endpoints, quarantining compromised namespaces—with an end-of-tier default of Deny so nothing slips past unevaluated. Platform Engineering owns a middle `platform` tier for cluster-wide infrastructure defaults like CoreDNS egress and Prometheus scraping, typically defaulting to Pass so unrelated traffic falls through to the application layer. Developers are confined to the high-order `default` tier, where they write their own namespace-scoped policies and the tier closes with a "fail-closed" Default-Deny safety net.
 
 ## Summary: Linear Traffic Control
 Transitioning from flat network policies to tiered architectures is the cloud-native equivalent of moving from a chaotic, single-file legacy firewall script to a clean, structured enterprise firewall zone layout. Standard Kubernetes NetworkPolicy alone can't get you there—it's namespace-jailed, allow-only, and strictly additive, which leaves a hard persona gap between the teams who set guardrails and the teams who ship services.
