@@ -26,7 +26,7 @@ To solve these scaling pain points, we have to move away from a flat network arc
 
 1. **Global, Cluster-Wide Scope:** To stop copy-pasting rules, administrators need a policy type that natively operates at the cluster level rather than the namespace level. This allows a single manifest to apply to all current and future namespaces automatically, eliminating the risk of "configuration drift" and ensuring day-one protection for new workloads.
 2. **Separation of Concerns (RBAC-Gated Tiers):** Security, platform, and application teams need their own distinct logical "zones" or tiers to deploy rules. These tiers must be strictly gated by Role-Based Access Control (RBAC) so a developer modifying their application namespace cannot alter or override a higher-priority platform or security tier.
-3. **Deterministic, Top-Down Evaluation:** The firewall engine must evaluate these tiers sequentially. Traffic must pass through the highest priority tier (e.g., Security) before it ever reaches a lower tier (e.g., Application).
+3. **Deterministic, Top-Down Evaluation:** The firewall engine must evaluate these tiers sequentially. Traffic must pass through the highest-priority tier (e.g., Security) before it ever reaches a lower tier (e.g., Application).
 4. **The Pass Action Logic:** In a standard additive firewall, a rule can usually only say Yes (Allow) or No (Deny). If a security team wants to create a global exception or simply declare that a specific type of traffic isn't a threat, they need a third option: Pass.
 
 ### The Magic of the Pass Action
@@ -49,7 +49,7 @@ This API completely shifts how cluster administrators manage traffic by introduc
 
 ```
 ┌────────────────────────────────────────────────────────┐
-│ 1. ClusterNetworkPolicy (Admin Tier)                   │
+│ 1. ClusterNetworkPolicy (Admin tier)                   │
 │     Scope: Cluster-wide                                │  ◄── Strict Guardrails (InfoSec)
 │     Actions: Accept, Deny, Pass                        │
 └───────────────────────────┬────────────────────────────┘
@@ -63,17 +63,17 @@ This API completely shifts how cluster administrators manage traffic by introduc
                             │ (If no policy selects pod)
                             ▼
 ┌────────────────────────────────────────────────────────┐
-│ 3. ClusterNetworkPolicy (Baseline Tier)                │
+│ 3. ClusterNetworkPolicy (Baseline tier)                │
 │     Scope: Cluster-wide                                │  ◄── Default Fallbacks (Platform)
 │     Actions: Accept, Deny, Pass                        │
 └────────────────────────────────────────────────────────┘
 ```
 
-**The Top Layer: ClusterNetworkPolicy (Admin Tier)**: This is the high-priority tier controlled by cluster administrators and InfoSec. Rules here are evaluated first. It supports explicit Accept, Deny, and Pass actions. If the admin writes a Deny rule here, no developer manifest can override it. If they write a Pass rule, evaluation trickles down to the next tier.
+**The Top Layer: ClusterNetworkPolicy (Admin tier)**: This is the high-priority tier controlled by cluster administrators and InfoSec. Rules here are evaluated first. It supports explicit Accept, Deny, and Pass actions. If the admin writes a Deny rule here, no developer manifest can override it. If they write a Pass rule, evaluation trickles down to the next tier.
 
 **The Middle Layer: Standard NetworkPolicy:** This is the traditional application-developer tier. It only kicks in if traffic wasn't explicitly allowed or denied by the ClusterNetworkPolicy in the Admin tier above it. This keeps developers agile, letting them connect their microservices without needing admin intervention. One subtlety to keep in mind: standard NetworkPolicy carries an *implicit deny* for any pod it selects. So traffic only falls through to the Baseline tier when no NetworkPolicy selects the workload at all—a pod that *is* selected but matches none of its allow rules is already dropped here, and never reaches the Baseline tier below.
 
-**The Bottom Layer: ClusterNetworkPolicy (Baseline Tier):** This is the cluster-scoped Baseline tier, meant for default fallbacks. It acts as the safety net after developer policies are checked. For example, if a developer forgets to secure their pod, this policy can enforce a default cluster-wide posture like "if no developer policy matches this traffic, deny all intra-cluster traffic by default."
+**The Bottom Layer: ClusterNetworkPolicy (Baseline tier):** This is the cluster-scoped Baseline tier, meant for default fallbacks. It acts as the safety net after developer policies are checked. For example, if a developer forgets to secure their pod, this policy can enforce a default cluster-wide posture like "if no developer policy matches this traffic, deny all intra-cluster traffic by default."
 
 All of this creates a native, layered approach to security, with the separation of concerns enforced by Kubernetes itself. Because `ClusterNetworkPolicy` is delivered as a new Custom Resource Definition (CRD) rather than a tweak to the existing `NetworkPolicy` type, standard Kubernetes RBAC governs who can interact with it.
 
