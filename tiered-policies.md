@@ -31,7 +31,7 @@ To solve these scaling pain points, we have to move away from a flat network arc
 
 The secret weapon of tiered policies is the Pass action. If a rule matches traffic inside the security tier, but the security team wants to delegate the final connection decision to the platform or development teams, they can flag it as Pass.
 
-Think of Pass as a delegated hand-off. When a packet matches a rule with a Pass action in a high-priority tier, the engine stops evaluating rules in that specific tier and skips entirely down to the next tier in the hierarchy. This allows security administrators to say: "This traffic is safe by our standards, but we aren't explicitly endorsing it. We are passing the final decision down to the platform or development teams to handle at their layer." Without a Pass action, tiered policies become brittle, forcing admins to explicitly track and Allow every single microservice connection at the highest level, completely defeating the purpose of developer agility.
+Think of Pass as a delegated hand-off. When a packet matches a rule with a Pass action in a high-priority tier, the engine skips the remaining lower-precedence rules in that tier and continues evaluation in the next tier down the hierarchy. This allows security administrators to say: "This traffic is safe by our standards, but we aren't explicitly endorsing it. We are passing the final decision down to the platform or development teams to handle at their layer." Without a Pass action, tiered policies become brittle, forcing admins to explicitly track and Allow every single microservice connection at the highest level, completely defeating the purpose of developer agility.
 
 ## The Kubernetes Native Answer: ClusterNetworkPolicy
 
@@ -69,13 +69,13 @@ This API completely shifts how cluster administrators manage traffic by introduc
 
 **The Top Layer: ClusterNetworkPolicy (Admin Tier)**: This is the high-priority tier controlled by cluster administrators and InfoSec. Rules here are evaluated first. It supports explicit Accept, Deny, and Pass actions. If the admin writes a Deny rule here, no developer manifest can override it. If they write a Pass rule, evaluation trickles down to the next tier.
 
-**The Middle Layer: Standard NetworkPolicy:** This is the traditional application-developer tier. It only kicks in if traffic wasn't explicitly allowed or denied by the ClusterNetworkPolicy in the Admin tier above it. This keeps developers agile, letting them connect their microservices without needing admin intervention.
+**The Middle Layer: Standard NetworkPolicy:** This is the traditional application-developer tier. It only kicks in if traffic wasn't explicitly allowed or denied by the ClusterNetworkPolicy in the Admin tier above it. This keeps developers agile, letting them connect their microservices without needing admin intervention. One subtlety to keep in mind: standard NetworkPolicy carries an *implicit deny* for any pod it selects. So traffic only falls through to the Baseline tier when no NetworkPolicy selects the workload at all—a pod that *is* selected but matches none of its allow rules is already dropped here, and never reaches the Baseline tier below.
 
 **The Bottom Layer: ClusterNetworkPolicy (Baseline Tier):** This is the cluster-scoped Baseline tier, meant for default fallbacks. It acts as the safety net after developer policies are checked. For example, if a developer forgets to secure their pod, this policy can enforce a default cluster-wide posture like "if no developer policy matches this traffic, deny all intra-cluster traffic by default."
 
-All of this creates a native, layered approach to security which means you no longer have to choose between absolute security and developer velocity—the API enforces a structured chain of command natively. The separation of concerns is enforced by Kubernetes itself. Because `ClusterNetworkPolicy` is delivered as a new Custom Resource Definition (CRD) rather than a tweak to the existing `NetworkPolicy` type, standard Kubernetes RBAC governs who can interact with it.
+All of this creates a native, layered approach to security, with the separation of concerns enforced by Kubernetes itself. Because `ClusterNetworkPolicy` is delivered as a new Custom Resource Definition (CRD) rather than a tweak to the existing `NetworkPolicy` type, standard Kubernetes RBAC governs who can interact with it.
 
-Calico added support for ClusterNetworkPolicy API in release v3.32.
+Calico shipped a conformant implementation of the ClusterNetworkPolicy API in release v3.32, giving you the upstream standard on top of its existing high-performance data plane.
 
 ## Industry-Grade Tiering: Calico Policy Tiers
 
