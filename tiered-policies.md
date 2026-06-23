@@ -9,14 +9,14 @@ To scale cluster security without slowing down engineering velocity, we must aba
 Standard Kubernetes NetworkPolicy resources are incredibly useful for basic application microsegmentation, but they have major architectural bottlenecks when scaled across an enterprise:
 
 1. **The Namespace Jail:** Standard network policies are inherently scoped to a namespace. If your InfoSec team mandates a cluster-wide rule—such as blocking all internal pods from querying the cloud provider's metadata API (169.254.169.254)—you have to copy-paste that policy into *every single namespace*. If a developer creates a new namespace tomorrow, that guardrail doesn't exist until someone manually applies it.
-2. **Organizational Friction:** Because anyone with namespace access can manipulate these policies, it sets up a direct conflict between the platform/security admins who need to enforce strict guardrails, and DevOps teams who just want their apps to talk to each other without opening a Jira ticket.
+2. **The "Allow-Only" Restriction:** Standard policies cannot explicitly Deny traffic. They operate solely on an *allow-list* model. Isolation is implicit: if a pod is selected by a policy, any traffic not explicitly allow-listed is dropped. This makes it impossible to write a simple, top-level rule that says, *"Block traffic from Namespace X to Namespace Y, no matter what."*
 3. **No Rules Hierarchy:** Kubernetes network policies are strictly additive. There are no weights, priorities, or order sequences. An application developer can accidentally (or intentionally) write a loose policy that completely bypasses the security team's intended restrictions—shattering any baseline trust.
-4. **The "Allow-Only" Restriction:** Standard policies cannot explicitly Deny traffic. They operate solely on an *allow-list* model. Isolation is implicit: if a pod is selected by a policy, any traffic not explicitly allow-listed is dropped. This makes it impossible to write a simple, top-level rule that says, *"Block traffic from Namespace X to Namespace Y, no matter what."*
+4. **Organizational Friction:** Because anyone with namespace access can manipulate these policies, it sets up a direct conflict between the platform/security admins who need to enforce strict guardrails, and DevOps teams who just want their apps to talk to each other without opening a Jira ticket.
 
-All of this creates a severe Persona Gap within organizations:
+All of this creates a severe **Persona Gap** within organizations:
 
-* Platform & Security Teams need to enforce global, un-overrideable guardrails (e.g., "No pods should ever talk to the Cloud Metadata API," or "Isolate the payments namespace from everything else").
-* Application Developers need the freedom to write granular, service-to-service rules for their applications without opening infrastructure support tickets.
+* **Platform & Security Teams** need to enforce global, un-overrideable guardrails (e.g., "No pods should ever talk to the Cloud Metadata API," or "Isolate the payments namespace from everything else").
+* **Application Developers** need the freedom to write granular, service-to-service rules for their applications without opening infrastructure support tickets.
 
 ## What a Scalable Solution Requires
 
@@ -38,8 +38,8 @@ Think of Pass as a delegated hand-off. When a packet matches a rule with a Pass 
 Recognizing these scalability constraints, the Kubernetes Network Policy API Working Group developed a native, multi-layered solution: **ClusterNetworkPolicy**. The API delivers exactly the four capabilities outlined above, with a few concrete specifics worth calling out:
 
 * **A Native Three-Layer Hierarchy:** It introduces distinct, sequentially evaluated resource tiers—ClusterNetworkPolicy (Admin tier) at the top for absolute guardrails, standard NetworkPolicy in the middle for developer agility, and ClusterNetworkPolicy (Baseline tier) at the bottom as a cluster-wide fallback safety net. Unlike namespace-jailed standard policies, the Admin and Baseline tiers apply across the entire cluster.
-* **Separation of Concerns:** ClusterNetworkPolicy is delivered as a new Custom Resource Definition (CRD) rather than a tweak to the existing NetworkPolicy type, standard Kubernetes RBAC governs who can interact with it.
-* **Numeric Precedence:** Policies feature explicit integer priorities. A policy with a lower integer value (e.g., 10\) takes precedence over a policy with a higher value (e.g., 100), allowing for deterministic evaluation.
+* **Separation of Concerns:** Because ClusterNetworkPolicy is delivered as a new Custom Resource Definition (CRD) rather than a tweak to the existing NetworkPolicy type, standard Kubernetes RBAC governs who can interact with it.
+* **Numeric Precedence:** Policies feature explicit integer priorities. A policy with a lower integer value (e.g., 10) takes precedence over a policy with a higher value (e.g., 100), allowing for deterministic evaluation.
 * **Explicit Actions:** Rules are no longer purely additive—you can now design rules with explicit Accept (formerly named Allow), Deny, and Pass actions.
 
 This API completely shifts how cluster administrators manage traffic by introducing a native, three-tiered evaluation hierarchy:
@@ -76,7 +76,7 @@ Combined, these features provide a native, multi-level strategy for scaling ente
 
 ## Industry-Grade Tiering: Calico Policy Tiers
 
-While the native Kubernetes APIs introduce a great three-layer model, enterprise environments often require finer granularity. Calico expands on this concept by offering Policy Tiers—allowing you to design an arbitrary number of custom evaluation layers. In Calico, every network policy lives within a designated Tier, and traffic is evaluated through those tiers sequentially, in ascending order of each tier's assigned order value (lowest integer first). Within a hierarchy of trust, a typical enterprise stack maps directly to team responsibilities: Security Tiers → Platform Tiers → Application Tiers.
+While the native Kubernetes APIs introduce a great three-layer model, enterprise environments often require finer granularity. Calico expands on this concept by offering Policy Tiers—allowing you to design an arbitrary number of custom evaluation layers. In Calico, every network policy lives within a designated tier, and traffic is evaluated through those tiers sequentially, in ascending order of each tier's assigned order value (lowest integer first). Within a hierarchy of trust, a typical enterprise stack maps directly to team responsibilities: Security tiers → Platform tiers → Application tiers.
 
 Each tier holds its own ordered list of policies and ends in a configurable default action; evaluation flows top-down until a rule (or a tier default) returns a terminal Allow/Deny, while a Pass cascades to the next tier:
 
@@ -107,7 +107,7 @@ Each tier holds its own ordered list of policies and ends in a configurable defa
 └──────────────────────────────────────────────────────────────┘
 ```
 
-The shape is the point: where the native model hands you exactly three fixed layers, Calico's tiers are a generic, extensible primitive. The number, names, and ordering are yours, and every tier carries its own end-of-tier default action and RBAC scope—so the Security → Platform → Application stack above is just one convention, not a hard-coded ceiling.
+The shape is the point: where the native model hands you exactly three fixed layers, Calico's tiers are a generic, extensible primitive. The number, names, and ordering are yours, and every tier carries its own end-of-tier default action and RBAC scope—so the Security → Platform → Application tiers above are just one convention, not a hard-coded ceiling.
 
 ### The Nuance of Default Actions: Native vs. Calico
 
@@ -115,7 +115,7 @@ When designing your policy architecture, it is vital to account for how a tier b
 
 ### Natively Bridging the Standards Gap
 
-A significant benefit of Calico architecture is its native compatibility with Kubernetes standards. Calico deployments based on v3.32+ releases automatically ingest cluster-wide ClusterNetworkPolicy resources, mapping their implicit admin and baseline tiers into native Calico tiers. For example, Admin-tier ClusterNetworkPolicy resources land in an auto-created tier, named kube-admin (order 1,000, default action Pass), and Baseline-tier resources in another auto-created tier, named kube-baseline tier (order 10,000,000, default action Pass), so they slot into Calico's evaluation order without any manual wiring. This ensures that you can design an open-source standard architecture while still taking advantage of Calico's highly optimized data plane enforcement.
+A significant benefit of Calico architecture is its native compatibility with Kubernetes standards. Calico deployments based on v3.32+ releases automatically ingest cluster-wide ClusterNetworkPolicy resources, mapping their implicit admin and baseline tiers into native Calico tiers. For example, Admin-tier ClusterNetworkPolicy resources land in an auto-created tier, named kube-admin (order 1,000, default action Pass), and Baseline-tier resources in another auto-created tier, named kube-baseline (order 10,000,000, default action Pass), so they slot into Calico's evaluation order without any manual wiring. This ensures that you can design an open-source standard architecture while still taking advantage of Calico's highly optimized data plane enforcement.
 
 ### Per-Tier RBAC: Delegating Ownership Without Sharing Keys
 
@@ -128,7 +128,7 @@ As powerful as policy tiers are for establishing a clear hierarchy of trust, the
 If you are planning to roll out tiers across your production clusters, you need to be prepared to tackle two main challenges:
 
 1. **The Troubleshooting Nightmare:** While the Pass action is essential for delegating control, it creates an invisible tracing problem. If a packet enters the cluster and encounters three separate policies in the Security tier, two in the Platform tier, and five in the developer's Application tier before finding a match, maintaining a mental model of that packet's lifecycle becomes impossible. Because each Pass action pushes evaluation to the next subsequent layer without finalizing a verdict, debugging a dropped packet requires tracing state across multiple files, distinct Kubernetes resources, and varying organizational personas. You are no longer just looking at a YAML file; you are evaluating an execution stack.
-     
+
 2. **The Anatomy of a Shadow Rule:** The most insidious challenge in a tiered environment is policy shadowing—specifically, when a rule in a higher tier completely neutralizes or masks a valid intent in a lower tier without throwing any errors. This generally happens when a broad rule in a high-precedence tier like the InfoSec tier impacts application traffic. As an example, the InfoSec team might deploy a global compliance policy intended to simply audit or log a specific type of traffic. However, if they forget to terminate that policy with an explicit Pass action, they will unintentionally hijack that pod's traffic lifecycle. The packet will be cleanly dropped at the end of the Security tier (whose default action is Deny), completely starving out the developer's downstream application rules without throwing an explicit syntax error during deployment.
 
 To mitigate these challenges, it is important to consider best practices in policy model design.
@@ -139,9 +139,9 @@ To build a stable cluster defense layout, you shouldn't create a dozen chaotic t
 
 | Persona | Core Responsibility | Example Use Case |
 | :---- | :---- | :---- |
-| Security Engineers | Global threat mitigation & absolute boundaries. | Block Log4Shell callback egress; quarantine compromised namespaces; block cloud metadata APIs. |
-| Platform Engineers | Infrastructure logging, metrics, and mesh stability. | Ensure Prometheus can scrape endpoints cluster-wide; allow standard CoreDNS egress. |
-| Developers | Microservice-to-microservice functional connectivity. | Allow frontend pods to communicate with backend pods on port 8080\. |
+| **Security Engineers** | Global threat mitigation & absolute boundaries. | Block Log4Shell callback egress; quarantine compromised namespaces; block cloud metadata APIs. |
+| **Platform Engineers** | Infrastructure logging, metrics, and mesh stability. | Ensure Prometheus can scrape endpoints cluster-wide; allow standard CoreDNS egress. |
+| **Developers** | Microservice-to-microservice functional connectivity. | Allow frontend pods to communicate with backend pods on port 8080. |
 
 ### The Kubernetes Native Model
 
