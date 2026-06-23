@@ -45,18 +45,18 @@ Recognizing these scalability constraints, the Kubernetes Network Policy API Wor
 This API completely shifts how cluster administrators manage traffic by introducing a native, three-tiered evaluation hierarchy:
 
 ```
-┌─────────────────────────────────────┐
-│ 1. ClusterNetworkPolicy (Admin tier)                                           │
-│    Scope: Cluster-wide                                                                      │  ◄── Strict Guardrails (InfoSec)
-│    Actions: Accept, Deny, Pass                                                        │
-└───────────────────────┬──────────┘
+┌────────────────────────────────────────────────────────┐
+│ 1. ClusterNetworkPolicy (Admin tier)                   │
+│    Scope: Cluster-wide                                 │  ◄── Strict Guardrails (InfoSec)
+│    Actions: Accept, Deny, Pass                         │
+└───────────────────────────┬────────────────────────────┘
                             │ (If Pass or No Match)
                             ▼
-┌──────────────────────────────────────┐
-│ 2. Standard NetworkPolicy                   │
-│    Scope: Namespace                         │  ◄── Application Logic (Developers)
-│    Actions: Allow-only (implicit deny)      │
-└────────────────────── ┬──────────┘
+┌────────────────────────────────────────────────────────┐
+│ 2. Standard NetworkPolicy                              │
+│    Scope: Namespace                                    │  ◄── Application Logic (Developers)
+│    Actions: Allow-only (implicit deny)                 │
+└───────────────────────────┬────────────────────────────┘
                             │ (If no policy selects pod)
                             ▼
 ┌────────────────────────────────────────────────────────┐
