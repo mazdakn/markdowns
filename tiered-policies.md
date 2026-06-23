@@ -65,6 +65,17 @@ This API completely shifts how cluster administrators manage traffic by introduc
 └────────────────────────────────────────────────────────┘
 ```
 
+<!-- Mermaid version of the diagram above — renders as a diagram on GitHub and exports to SVG/PNG for the Google Doc. The ASCII block is kept for plain-markdown contexts. -->
+
+```mermaid
+flowchart TD
+    Admin["<b>1. ClusterNetworkPolicy — Admin tier</b><br/>Scope: Cluster-wide<br/>Actions: Accept, Deny, Pass<br/><i>◄ Strict guardrails (InfoSec)</i>"]
+    NP["<b>2. Standard NetworkPolicy</b><br/>Scope: Namespace<br/>Actions: Allow-only (implicit deny)<br/><i>◄ Application logic (Developers)</i>"]
+    Baseline["<b>3. ClusterNetworkPolicy — Baseline tier</b><br/>Scope: Cluster-wide<br/>Actions: Accept, Deny, Pass<br/><i>◄ Default fallbacks (Platform)</i>"]
+    Admin -->|"Pass or no match"| NP
+    NP -->|"No NetworkPolicy selects the pod"| Baseline
+```
+
 **The Top Layer: ClusterNetworkPolicy (Admin tier)**: This is the high-priority tier controlled by cluster administrators and InfoSec. Rules here are evaluated first. It supports explicit Accept, Deny, and Pass actions. If the admin writes a Deny rule here, no developer manifest can override it. If they write a Pass rule, evaluation trickles down to the next tier.
 
 **The Middle Layer: Standard NetworkPolicy:** This is the traditional application-developer tier. It only kicks in if traffic wasn't explicitly allowed or denied by the ClusterNetworkPolicy in the Admin tier above it. This keeps developers agile, letting them connect their microservices without needing admin intervention. One subtlety to keep in mind: standard NetworkPolicy carries an *implicit deny* for any pod it selects. So traffic only falls through to the Baseline tier when no NetworkPolicy selects the workload at all—a pod that *is* selected but matches none of its allow rules is already dropped here, and never reaches the Baseline tier below.
@@ -104,6 +115,19 @@ Each tier holds its own ordered list of policies and ends in a configurable defa
 │   └─ policies … → Allow | Deny | Pass                        │
 │   end-of-tier default: Deny  (fail-closed safety net)        │
 └──────────────────────────────────────────────────────────────┘
+```
+
+<!-- Mermaid version of the diagram above — renders as a diagram on GitHub and exports to SVG/PNG for the Google Doc. The ASCII block is kept for plain-markdown contexts. -->
+
+```mermaid
+flowchart TD
+    Sec["<b>Tier — order: 100</b> · RBAC owner: e.g. Security<br/>policy (order: 10), policy (order: 20), …<br/>rules evaluated by policy order → Allow / Deny / Pass<br/><i>end-of-tier default: Pass / Deny (you choose, per tier)</i>"]
+    Plat["<b>Tier — order: 200</b> · RBAC owner: e.g. Platform<br/>policies … → Allow / Deny / Pass<br/><i>end-of-tier default: Pass / Deny</i>"]
+    More["⋮ arbitrary additional tiers"]
+    Dev["<b>Tier: default — order: highest</b> · RBAC owner: e.g. Developers<br/>policies … → Allow / Deny / Pass<br/><i>end-of-tier default: Deny (fail-closed safety net)</i>"]
+    Sec -->|"Pass, or no policy selects the workload"| Plat
+    Plat -->|"Pass …"| More
+    More --> Dev
 ```
 
 The shape is the point: where the native model hands you exactly three fixed layers, Calico's tiers are a generic, extensible primitive. The number, names, and ordering are yours, and every tier carries its own end-of-tier default action and RBAC scope—so the Security → Platform → Application stack above is just one convention, not a hard-coded ceiling.
