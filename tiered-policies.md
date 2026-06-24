@@ -68,7 +68,7 @@ This API completely shifts how cluster administrators manage traffic by introduc
 
 **The Top Layer: ClusterNetworkPolicy (Admin tier)**: This is the high-priority tier controlled by cluster administrators and InfoSec. Rules here are evaluated first. It supports explicit Accept, Deny, and Pass actions. If the admin writes a Deny rule here, no developer manifest can override it. If they write a Pass rule, evaluation trickles down to the next tier.
 
-**The Middle Layer: Standard NetworkPolicy**: This is the traditional application-developer tier. It only kicks in if traffic wasn't explicitly allowed or denied by the ClusterNetworkPolicy in the Admin tier above it. This keeps developers agile, letting them connect their microservices without needing admin intervention. One subtlety to keep in mind: standard NetworkPolicy carries an *implicit deny* for any pod it selects. So traffic only falls through to the Baseline tier when no NetworkPolicy selects the workload at all—a pod that *is* selected but matches none of its Allow rules is already dropped here, and never reaches the Baseline tier below.
+**The Middle Layer: Standard NetworkPolicy**: This is the traditional application-developer tier. It only kicks in if traffic wasn't explicitly allowed or denied by the ClusterNetworkPolicy in the Admin tier above it. This keeps developers agile, letting them connect their microservices without needing admin intervention. One subtlety to keep in mind: standard NetworkPolicy carries an *implicit deny* for any pod it selects. So traffic only falls through to the Baseline tier when no NetworkPolicy selects the workload at all—a pod that *is* selected but matches none of its allow rules is already dropped here, and never reaches the Baseline tier below.
 
 **The Bottom Layer: ClusterNetworkPolicy (Baseline tier)**: This is the cluster-scoped Baseline tier, meant for default fallbacks. It acts as the safety net after developer policies are checked. For example, if a developer forgets to secure their pod, this policy can enforce a default cluster-wide posture like "if no developer policy matches this traffic, deny all intra-cluster traffic by default."
 
@@ -107,7 +107,7 @@ Each tier holds its own ordered list of policies and ends in a configurable defa
 └──────────────────────────────────────────────────────────────┘
 ```
 
-The shape is the point: where the native model hands you exactly three fixed layers, Calico's tiers are a generic, extensible primitive. The number, names, and ordering are yours, and every tier carries its own end-of-tier default action and RBAC scope—so the Security → Platform → Application tiers above are just one convention, not a hard-coded ceiling.
+The shape is the point: where the native model hands you exactly three fixed layers, Calico's tiering is a generic, extensible primitive. The number, names, and ordering are yours, and every tier carries its own end-of-tier default action and RBAC scope—so the Security → Platform → Application tiers above are just one convention, not a hard-coded ceiling.
 
 ### The Nuance of Default Actions: Native vs. Calico
 
