@@ -25,7 +25,7 @@ To solve these scaling pain points, we have to move away from a flat network arc
 1. **Global, Cluster-Wide Scope:** To stop copy-pasting rules, administrators need a policy type that natively operates at the cluster level rather than the namespace level. This allows a single manifest to apply to all current and future namespaces automatically, eliminating the risk of "configuration drift" and ensuring day-one protection for new workloads.
 2. **Separation of Concerns (RBAC-Gated Tiers):** Security, platform, and application teams need their own distinct logical "zones" or tiers to deploy rules. These tiers must be strictly gated by Role-Based Access Control (RBAC) so a developer modifying their application namespace cannot alter or override a higher-priority platform or security tier.
 3. **Deterministic, Top-Down Evaluation:** The firewall engine must evaluate these tiers sequentially. Traffic must pass through the highest-priority tier (e.g., Security) before it ever reaches a lower tier (e.g., Application).
-4. **The Pass Action Logic:** In a standard additive firewall, a rule can usually only say Yes (Allow) or No (Deny). If a security team wants to create a global exception or simply declare that a specific type of traffic isn't a threat, they need a third option: Pass.
+4. **The Pass Action:** A standard additive firewall rule can only say Yes (Allow) or No (Deny). Tiered evaluation needs a third option—Pass—the mechanism that lets one tier defer the decision to the next (covered in detail below).
 
 ### Why the Pass Action Matters
 
@@ -75,6 +75,8 @@ Combined, these features provide a native, multi-level strategy for scaling ente
 ## Extending the Model: Calico Policy Tiers
 
 While the native Kubernetes APIs introduce a great three-layer model, enterprise environments often require finer granularity. Calico expands on this concept by offering Policy Tiers—allowing you to design an arbitrary number of custom evaluation layers. In Calico, every network policy lives within a designated tier, and traffic is evaluated through those tiers sequentially, in ascending order of each tier's assigned order value (lowest integer first). Within a hierarchy of trust, a typical enterprise stack maps directly to team responsibilities: Security tiers → Platform tiers → Application tiers.
+
+Calico offers two policy resource types that live inside tiers: namespace-scoped `NetworkPolicy` for team- and app-local rules, and cluster-scoped `GlobalNetworkPolicy`, which is non-namespaced and selects endpoints across the entire cluster—pods, VMs, even host interfaces. GlobalNetworkPolicy is how Calico satisfies the cluster-wide scope requirement: a security or platform team applies one resource that covers all current and future namespaces, the direct analog to a ClusterNetworkPolicy in the Admin or Baseline tier. (Note the name collision: Calico's own `NetworkPolicy` in the `projectcalico.org/v3` API group is a different resource from the upstream Kubernetes `NetworkPolicy`.)
 
 Each tier holds its own ordered list of policies and ends in a configurable default action; evaluation flows top-down until a rule (or a tier default) returns a terminal Allow/Deny, while a Pass cascades to the next tier:
 
@@ -141,13 +143,7 @@ To build a stable cluster defense layout, you shouldn't create a dozen chaotic t
 | **Platform Engineers** | Infrastructure logging, metrics, and mesh stability. | Ensure Prometheus can scrape endpoints cluster-wide; allow standard CoreDNS egress. |
 | **Developers** | Microservice-to-microservice functional connectivity. | Allow frontend pods to communicate with backend pods on port 8080. |
 
-### The Kubernetes Native Model
-
-The native Kubernetes model structures cluster security into a definitive three-part stack. ClusterNetworkPolicy resources in the Admin tier are shared by both the security and platform teams. The security team uses them to enforce non-negotiable compliance guardrails—such as blocking access to cloud metadata endpoints or isolating regulated payment namespaces—with strict Deny rules that cannot be bypassed. The platform team uses the same tier for cluster-wide infrastructure allowances; for example, an Accept rule permitting DNS (CoreDNS) egress so every workload can resolve names without each developer having to allow it in their own namespace policies. Application developer teams have full autonomy to write standard, namespace-scoped NetworkPolicy objects for application-specific microsegmentation without fear of disrupting global parameters. Finally, ClusterNetworkPolicy resources in the Baseline tier are managed by both security and platform teams to apply global infrastructure defaults and establish a "fail-closed" cluster-wide Default-Deny safety net. This ensures that any newly deployed microservice lacking an explicit developer policy is safely isolated by default rather than left completely exposed.
-
-### The Calico Model
-
-Calico maps the same three personas onto named, RBAC-gated tiers instead of fixed resource types. The security team owns a low-order security tier carrying the non-negotiable guardrails—blocking cloud metadata endpoints, quarantining compromised namespaces—with an end-of-tier default of Deny so nothing slips past unevaluated. Platform Engineering owns a middle platform tier for cluster-wide infrastructure defaults like CoreDNS egress and Prometheus scraping, typically defaulting to Pass so unrelated traffic falls through to the application layer. Developers are confined to the high-order default tier, where they write their own namespace-scoped policies and the tier closes with a "fail-closed" Default-Deny safety net.
+This maps cleanly onto either model: in the native API, Security and Platform share the Admin and Baseline tiers (strict Deny guardrails and fail-closed defaults respectively) while Developers own namespace-scoped NetworkPolicy in the middle. In Calico, each persona owns its own RBAC-gated tier—Security low-order with an end-of-tier Deny, Platform in the middle typically defaulting to Pass, and Developers confined to the high-order default tier that closes fail-closed.
 
 ## Summary
 
