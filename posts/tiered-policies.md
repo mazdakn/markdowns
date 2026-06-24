@@ -8,15 +8,15 @@ To scale cluster security without slowing down engineering velocity, we must aba
 
 Standard Kubernetes NetworkPolicy resources are genuinely useful for basic application microsegmentation, but they have major architectural bottlenecks when scaled across an enterprise:
 
-1. **Namespace-Scoped by Design:** Standard network policies are inherently scoped to a namespace. If your security team mandates a cluster-wide rule—such as blocking all internal pods from querying the cloud provider's metadata API (169.254.169.254)—you have to copy-paste that policy into *every single namespace*. If a developer creates a new namespace tomorrow, that guardrail doesn't exist until someone manually applies it.
+1. **Namespace-Scoped by Design:** Standard network policies are inherently scoped to a namespace. If your security team mandates a cluster-wide rule—such as blocking all internal pods from querying the cloud provider's metadata API (169.254.169.254)—you have to copy-paste that policy into *every single namespace*. If a developer creates a new namespace, that guardrail doesn't exist until someone manually applies it.
 2. **The "Allow-Only" Restriction:** Standard policies cannot explicitly Deny traffic. They operate solely on an *allow-list* model. Isolation is implicit: if a pod is selected by a policy, any traffic not explicitly allow-listed is dropped. This makes it impossible to write a simple, top-level rule that says, *"Block traffic from Namespace X to Namespace Y, no matter what."*
 3. **No Rules Hierarchy:** Kubernetes network policies are strictly additive. There are no weights, priorities, or order sequences. An application developer can accidentally (or intentionally) write a loose policy that bypasses the security team's intended restrictions, undermining any baseline trust.
 4. **Organizational Friction:** Because anyone with namespace access can manipulate these policies, it sets up a direct conflict between the platform/security admins who need to enforce strict guardrails, and DevOps teams who just want their apps to talk to each other without opening a Jira ticket.
 
-All of this creates a severe **Persona Gap** within organizations:
+All of this creates a severe persona gap within organizations:
 
-* **Platform & Security Teams** need to enforce global, un-overrideable guardrails (e.g., "No pods should ever talk to the Cloud Metadata API," or "Isolate the payments namespace from everything else").
-* **Application Developers** need the freedom to write granular, service-to-service rules for their applications without opening infrastructure support tickets.
+* Platform & Security Teams need to enforce global, un-overrideable guardrails (e.g., "No pods should ever talk to the Cloud Metadata API," or "Isolate the payments namespace from everything else").
+* Application Developers need the freedom to write granular, service-to-service rules for their applications without opening infrastructure support tickets.
 
 ## What a Scalable Solution Requires
 
@@ -29,9 +29,7 @@ To solve these scaling pain points, we have to move away from a flat network arc
 
 ### Why the Pass Action Matters
 
-The key enabler of tiered policies is the Pass action. If a rule matches traffic inside the security tier, but the security team wants to delegate the final connection decision to the platform or development teams, they can flag it as Pass.
-
-Think of Pass as a delegated hand-off. When a packet matches a rule with a Pass action in a high-priority tier, the engine skips the remaining lower-precedence rules in that tier and continues evaluation in the next tier down the hierarchy. This allows security administrators to say: "This traffic is safe by our standards, but we aren't explicitly endorsing it. We are passing the final decision down to the platform or development teams to handle at their layer." Without a Pass action, tiered policies become brittle, forcing admins to explicitly track and Allow every single microservice connection at the highest level, which would defeat the purpose of developer agility.
+The key enabler of tiered policies is the Pass action. Think of Pass as a delegated hand-off. When a packet matches a rule with a Pass action in a high-priority tier, the engine skips the remaining lower-precedence rules in that tier and continues evaluation in the next tier down the hierarchy. This allows security administrators to say: "This traffic is safe by our standards, but we aren't explicitly endorsing it. We are passing the final decision down to the platform or development teams to handle at their layer." Without a Pass action, tiered policies become brittle, forcing admins to explicitly track and Allow every single microservice connection at the highest level, which would defeat the purpose of developer agility.
 
 ## The Kubernetes Native Answer: ClusterNetworkPolicy
 
