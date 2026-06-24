@@ -33,7 +33,7 @@ The key enabler of tiered policies is the Pass action. Think of Pass as a delega
 
 ## The Kubernetes Native Answer: ClusterNetworkPolicy
 
-Recognizing these scalability constraints, the Kubernetes Network Policy API Working Group developed a native, multi-layered solution: **ClusterNetworkPolicy**. The API delivers exactly the four capabilities outlined above, with a few concrete specifics worth calling out:
+Recognizing these scalability constraints, the SIG-Network Network Policy API group developed a native, multi-layered solution: **ClusterNetworkPolicy**. The API delivers exactly the four capabilities outlined above, with a few concrete specifics worth calling out:
 
 * **A Native Three-Layer Hierarchy:** It introduces distinct, sequentially evaluated resource tiers—ClusterNetworkPolicy (Admin tier) at the top for absolute guardrails, standard NetworkPolicy in the middle for developer agility, and ClusterNetworkPolicy (Baseline tier) at the bottom as a cluster-wide fallback safety net. Unlike namespace-jailed standard policies, the Admin and Baseline tiers apply across the entire cluster.
 * **Separation of Concerns:** Because ClusterNetworkPolicy is delivered as a new Custom Resource Definition (CRD) rather than a tweak to the existing NetworkPolicy type, standard Kubernetes RBAC governs who can interact with it.
