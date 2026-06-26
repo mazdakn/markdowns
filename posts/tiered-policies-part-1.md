@@ -1,6 +1,6 @@
 # Tiered Network Policy: Scaling Kubernetes Security Beyond Flat Rules
 
-As Kubernetes clusters scale from a few development sandboxes to massive, multi-tenant production environments, platform teams inevitably hit an invisible wall. It usually starts with a security audit or a compliance mandate, which quickly transforms into what engineers call the "*Wall of YAML*". Suddenly, a handful of core microservices require hundreds of standard Kubernetes NetworkPolicy objects. Managing them becomes operationally expensive, auditing them is difficult, and a single developer misconfiguration can easily drop critical production traffic or open a massive security hole.
+As Kubernetes clusters scale from a few development sandboxes to massive, multi-tenant production environments, platform teams often find themselves facing a configuration management crisis — a small number of microservices suddenly demand hundreds of individual Kubernetes NetworkPolicy objects. Managing them becomes operationally expensive, auditing them is difficult, and a single developer misconfiguration can easily drop critical production traffic or open a massive security hole.
 
 To scale cluster security without slowing down engineering velocity, we must abandon the flat, uncoordinated rule planes of the past. The solution lies in establishing a clear, multi-layered framework: a hierarchy of trust powered by tiered network policies.
 
