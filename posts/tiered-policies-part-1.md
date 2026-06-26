@@ -1,6 +1,6 @@
 # Tiered Network Policy: Scaling Kubernetes Security Beyond Flat Rules
 
-As Kubernetes clusters scale from a few development sandboxes to massive, multi-tenant production environments, platform teams often find themselves facing a configuration management crisis — a small number of microservices suddenly demand hundreds of individual Kubernetes NetworkPolicy objects. Managing them becomes operationally expensive, auditing them is difficult, and a single developer misconfiguration can easily drop critical production traffic or open a massive security hole.
+As Kubernetes clusters scale from a few development sandboxes to massive, multi-tenant production environments, platform teams often find themselves facing a configuration management crisis—a small number of microservices suddenly demand hundreds of individual Kubernetes NetworkPolicy objects. Managing them becomes operationally expensive, auditing them is difficult, and a single developer misconfiguration can easily drop critical production traffic or open a massive security hole.
 
 To scale cluster security without slowing down engineering velocity, we must abandon the flat, uncoordinated rule planes of the past. The solution lies in establishing a clear, multi-layered framework: a hierarchy of trust powered by tiered network policies.
 
@@ -24,7 +24,7 @@ To solve these scaling pain points, we have to move away from a flat network arc
 
 ### Why the Pass Action Matters
 
-The key enabler of tiered policies is the Pass action. Think of Pass as a delegated hand-off. When a packet matches a rule with a Pass action in a high-priority tier, the engine skips the remaining lower-precedence rules in that tier and continues evaluation in the next tier down the hierarchy. This allows security administrators to say: "This traffic is safe by our standards, but we aren't explicitly endorsing it. We are passing the final decision down to the platform or development teams to handle at their layer." Without a Pass action, tiered policies become brittle, forcing admins to explicitly track and Allow every single microservice connection at the highest level, which would defeat the purpose of developer agility.
+The key enabler of tiered policies is the Pass action. Think of Pass as a delegated hand-off. When a packet matches a rule with a Pass action in a high-priority tier, the engine skips the remaining lower-precedence rules in that tier and continues evaluation in the next tier down the hierarchy. This allows security administrators to say: "This traffic is safe by our standards, but we aren't explicitly endorsing it. We are passing the final decision down to the platform or development teams to handle at their layer." Without a Pass action, tiered policies become brittle, forcing admins to explicitly track and Accept every single microservice connection at the highest level, which would defeat the purpose of developer agility.
 
 ## The Kubernetes Native Answer: ClusterNetworkPolicy
 
