@@ -1,50 +1,50 @@
-# MAZDAK NASAB 
-[mazdak.nasab@gmail.com](mailto:mazdak.nasab@gmail.com) | [mazdak.tech/about/](https://www.mazdak.tech/about/) | [github.com/mazdakn](https://github.com/mazdakn) | [linkedin.com/in/mazdakn](https://www.linkedin.com/in/mazdakn)
+**MAZDAK NASAB**
+[mazdak.nasab@gmail.com](mailto:mazdak.nasab@gmail.com) | [github.com/mazdakn](http://github.com/mazdakn) | [linkedin.com/in/mazdakn](http://www.linkedin.com/in/mazdakn/)
 
-- System developer and site reliability engineer passionate about building secure and reliable systems
-- Over 12 years of experience designing and developing secure, robust and innovative network systems
-- MSc in Computer Science - Networks and Distributed Systems
+Software and site reliability engineer passionate about building secure and reliable distributed systems with over 15 years of experience designing and developing secure, robust and innovative network systems.
 
-### EXPERIENCE
-**Core Developer** | Project Calico | 2021 - Present
-- Developing & maintaining Project Calico, most widely adopted container networking & security solution  
-- Maintaining Calico to run seamlessly on on-prem data centers and public cloud (Azure, GCP, AWS)  
-- Designing and developing features using Linux routing, packet filtering, eBPF/XDP and traffic control  
-- Enhanced Calico policy engine by introducing tiered policies and kubernetes admin network policies  
-- Introduced network observability by using connection and policy information to generate flow logs  
-- Improved BGP route advertisement in Calico by introducing route filtering based on different attributes  
-- Introduced stateless firewall capability in Calico eBPF data plane using XDP programs
+**EXPERIENCE**
+**Staff Software Engineer / Core Developer of Project Calico** | Tigera, Vancouver, Canada | 2021 – Present
 
+* Developing and maintaining Project Calico, most widely adopted container networking & security solution to run seamlessly on on-prem data centers and public cloud (Azure, GCP, AWS)
 
-**Senior Software Engineer** | Tigera, Vancouver, Canada | 2021 - Present
-- Developing and maintaining enterprise feature, like observability and egress control, of Project Calico
-- Designed and developed policy based egress control to route egress traffic via different gateways
-- Designed and developed egress gateway functionality in Azure to control workload's outbound traffic
-- Developed a workload run time security solution by monitoring syscalls and events using eBPF
+* **Policy Engine:**
+* Enhanced Calico policy engine by introducing tiered policies and kubernetes cluster network policies
+* Introduced stateless firewall capability in Calico eBPF data plane using XDP programs
 
-**Senior Site Reliability Engineer - Network Specialist** | Ericsson, Sweden | 2017 – 2021
-- System responsible and designer of data center network for an IoT platform handling millions of devices
-- Designed and developed a Linux host based micro segmentation firewall to save 200KUSD license cost
-- Secured infrastructure using proxies, multi layer firewalling and DoS mitigation systems with zero breach
-- Deployed load balancers, firewalls and proxies to satisfy functional and non-functional requirements
+* **Egress Traffic Engineering:**
+* Designed and developed a policy-based egress control, allowing granular routing of pod traffic through specific egress gateways to satisfy strict compliance and security requirements
+* Designed and developed egress gateway functionality in Azure to control workload's outbound traffic
+* Enhanced Calico to classify egress traffic by setting DiffServe to allow network fabric to prioritise
 
-**Senior Software Engineer** | Enea Software, Sweden | 2015 - 2017
-- Contributed to OPNFV open source project, a carrier grade network function virtualization solution
-- Led a team to design and develop virtualized customer premises equipments for Internet providers
-- Official Linux Foundation trainer for Open Source Virtualization course covering Qemu/KVM and Docker
+* **Advanced Routing:**
+* Enhanced Calico to program all cluster routes without any routing protocol to help users experience to not deal with complex routing protocol, and also to improve Calico scalability
+* Improved BGP route advertisement by introducing route filtering based on different attributes
 
-**System Developer** | Ericsson, Sweden | 2013 - 2015
-- Transformed a TCP/HTTP proxy to a highly available, performant and scalable virtual network function
-- Reduced deployment time from hours to minutes by automating the process using Python and Ansible
-- Optimized throughput and latency by tuning kernel and by replacing a kernel module with TPROXY
+* **Observability:**
+* Introduced network observability by using connection and policy information to generate flow logs
+* Developed a workload run time security solution by monitoring syscalls and events using eBPF
 
-### EDUCATION
-**MSc in Computer Science - Networks and Distributed Systems**  
-Chalmers University of Technology, Sweden | July 2013
+**Senior Site Reliability Engineer** **\- Network Specialist** | Ericsson, Sweden | 2017 – 2021
 
-### SKILLS
-- Proficient in system and network development and automation in C, Golang, Lua, Python and Ansible
-- Proficient in Linux network stack (eBPF/XDP, netfilter/iptables, traffic control, socket API)
-- Experienced in network systems, services and security (firewall, load balancer, proxy and gateways)
-- Knowledgeable about virtualization technologies (Kubernetes, Docker, OpenStack, Qemu, VMware)
-- Advanced knowledge of open source ecosystem for building highly available & redundant  infrastructure
+* Designed and deployed virtual network services (firewalls, L4/L7 load balancers and proxies) for an IoT platform to serve & protect millions of devices
+* Secured infrastructure using proxies, multi layer firewalling and DoS mitigation systems with zero breach
+* Designed and developed a Linux based micro-segmentation firewall to save 200KUSD license cost
+
+**Senior Software Engineer** | Enea Software, Sweden | 2015 – 2017
+
+* Contributed to OPNFV, an open source carrier grade OpenStack flavor, to run on ARM hardware
+* Official Linux Foundation trainer for Open Source Virtualization course covering Qemu/KVM and Docker
+
+**System Developer** | Ericsson, Sweden | 2013 – 2015
+
+* Transformed a TCP/HTTP proxy to a highly available, performant and scalable virtual network function
+* Reduced deployment time from hours to minutes by automating the process using Python and Ansible
+
+**EDUCATION**
+**MSc in Computer Science** | Network and Distributed Systems
+Chalmers University of Technology, Sweden | 2013
+
+**SKILLS**
+**Languages:** Go (Golang), C, Python, Lua, Ansible, Bash
+**Linux Network Stack :** eBPF/XDP, Netfilter(Iptables/Nftables), Routing, Traffic Control (TC), Socket API
