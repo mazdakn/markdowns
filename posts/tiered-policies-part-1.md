@@ -1,4 +1,4 @@
-# Tiered Network Policy: Scaling Kubernetes Security Beyond Flat Rules
+# Tiered Network Policy: Scaling Kubernetes Security
 
 As Kubernetes clusters scale from a few development sandboxes to massive, multi-tenant production environments, platform teams often find themselves facing a configuration management crisis. A small number of microservices suddenly demand hundreds of individual Kubernetes NetworkPolicy objects. Managing them becomes operationally expensive, auditing them is difficult, and a single developer misconfiguration can easily drop critical production traffic or open a massive security hole.
 
@@ -32,7 +32,7 @@ Recognizing these scalability constraints, the SIG-Network Policy API group deve
 
 * **A Native Three-Layer Hierarchy:** It introduces distinct, sequentially evaluated resource tiers. ClusterNetworkPolicy (Admin tier) at the top for absolute guardrails, standard NetworkPolicy in the middle for developer agility, and ClusterNetworkPolicy (Baseline tier) at the bottom as a cluster-wide fallback safety net. Unlike namespace-jailed standard policies, the Admin and Baseline tiers apply across the entire cluster.
 * **Separation of Concerns:** Because ClusterNetworkPolicy is delivered as a new Custom Resource Definition (CRD) rather than a tweak to the existing NetworkPolicy type, standard Kubernetes RBAC governs who can interact with it. This ensures that only Security/Platform teams access ClusterNetworkPolicy resources, while DevOps teams work only with namespaced network policies.
-* **Numeric Precedence:** Policies feature explicit integer priorities. A policy with a lower integer value (e.g., 10\) takes precedence over a policy with a higher value (e.g., 100), allowing for deterministic evaluation.
+* **Numeric Precedence:** Policies feature explicit integer priorities. A policy with a lower integer value (e.g., 10) takes precedence over a policy with a higher value (e.g., 100), allowing for deterministic evaluation.
 * **Explicit Actions:** Rules are no longer purely additive. You can now design rules with explicit Accept, Deny, and Pass actions.
 
 This API completely shifts how cluster administrators manage traffic by introducing a native, three-tiered evaluation hierarchy:
@@ -72,7 +72,8 @@ spec:
   tier: Admin
   priority: 100
   subject:
-    namespaces: {}
+    namespaces:
+      matchLabels: {}
   egress:
     - name: allow-dns
       action: Accept
@@ -90,27 +91,27 @@ spec:
               number: 53
 ```
 
-**The Middle Layer: Standard NetworkPolicy:** This is the traditional application-developer tier. It only kicks in if traffic wasn't explicitly allowed or denied by the ClusterNetworkPolicy in the Admin tier above it. This keeps developers agile, letting them connect their microservices without needing admin intervention. One subtlety to keep in mind: standard NetworkPolicy carries an *implicit deny* for any pod it selects. So traffic only falls through to the Baseline tier when no NetworkPolicy selects the workload at all. A pod that *is* selected but matches none of its Accept rules is already dropped here, and never reaches the Baseline tier below. The following network policy can be used to permit ingress HTTP traffic for the specific namespace.
+**The Middle Layer: Standard NetworkPolicy:** This is the traditional application-developer tier. It only kicks in if traffic wasn't explicitly allowed or denied by the ClusterNetworkPolicy in the Admin tier above it. This keeps developers agile, letting them connect their microservices without needing admin intervention. One subtlety to keep in mind: standard NetworkPolicy carries an *implicit deny* for any pod it selects. So traffic only falls through to the Baseline tier when no NetworkPolicy selects the workload at all. A pod that *is* selected but matches none of its Accept rules is already dropped here, and never reaches the Baseline tier below. The following network policy can be used to permit ingress HTTP traffic for the `awesome-app` namespace.
 
 ```
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
-  metadata:
-    name: allow-http-ingress
-    namespace: awesome-app
-  spec:
-    podSelector:
-      matchLabels:
-        app: http-server
-    policyTypes:
-      - Ingress
-    ingress:
-      - ports:
-          - protocol: TCP
-            port: 80
+metadata:
+  name: allow-http-ingress
+  namespace: awesome-app
+spec:
+  podSelector:
+    matchLabels:
+      app: http-server
+  policyTypes:
+    - Ingress
+  ingress:
+    - ports:
+        - protocol: TCP
+          port: 80
 ```
 
-**The Bottom Layer: ClusterNetworkPolicy (Baseline tier):** This is the cluster-scoped Baseline tier, meant for default fallbacks. It acts as the safety net after developer policies are checked. For example, if a developer forgets to secure their pod, this policy can enforce a default cluster-wide posture like "if no developer policy matches this traffic, deny all intra-cluster traffic by default.". The following ClusterNetworkPolicy would satisfy this requirement:
+**The Bottom Layer: ClusterNetworkPolicy (Baseline tier):** This is the cluster-scoped Baseline tier, meant for default fallbacks. It acts as the safety net after developer policies are checked. For example, if a developer forgets to secure their pod, this policy can enforce a default cluster-wide posture like "if no developer policy matches this traffic, deny all intra-cluster traffic by default." The following ClusterNetworkPolicy would satisfy this requirement:
 
 ```
 apiVersion: policy.networking.k8s.io/v1alpha2
@@ -135,4 +136,4 @@ Combined, these features provide a native, multi-level strategy for scaling ente
 
 ## Extending the Model: Calico Tiers
 
-## While the native Kubernetes APIs introduces a better three-layer model approach to security, and some control over rule priority, enterprise environments often require finer granularity. Calico expands on this concept by offering unlimited policy tiers, allowing you to design an arbitrary number of custom evaluation layers. Calico tiers will be discussed in the next post.
+While the native Kubernetes APIs introduce a better three-layer model and some control over rule priority, enterprise environments often require finer granularity. Calico expands on this concept by offering unlimited policy tiers, allowing you to design an arbitrary number of custom evaluation layers. Calico tiers will be discussed in the next post.
