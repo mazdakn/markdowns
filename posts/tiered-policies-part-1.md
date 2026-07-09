@@ -24,15 +24,15 @@ To solve these scaling pain points, we have to move away from a flat network arc
 
 ### Why the Pass Action Matters
 
-The key enabler of tiered policies is the Pass action. Think of Pass as a delegated hand-off. When a packet matches a rule with a Pass action in a high-priority tier, the engine skips the remaining lower-precedence rules in that tier and continues evaluation in the next tier down the hierarchy. This allows security administrators to say: "This traffic is safe by our standards, but we aren't explicitly endorsing it. We are passing the final decision down to the platform or development teams to handle at their layer." Without a Pass action, tiered policies become brittle, forcing admins to explicitly track and Accept every single microservice connection at the highest level, which would defeat the purpose of developer agility.
+The key enabler of tiered policies is the Pass action. Think of Pass as a delegated hand-off. When a packet matches a rule with a Pass action in a high-priority tier, the engine skips the remaining lower-precedence rules in that tier and continues evaluation in the next tier down the hierarchy. This allows security administrators to say: "This traffic is safe by our standards, but we aren't explicitly endorsing it. We are passing the final decision down to the platform or development teams to handle at their layer." Without a Pass action, tiered policies become brittle, forcing admins to explicitly track and approve every single microservice connection at the highest level, which would defeat the purpose of developer agility.
 
 ## The Kubernetes Native Answer: ClusterNetworkPolicy
 
-Recognizing these scalability constraints, the SIG-Network Network Policy API group developed a native, multi-layered solution: **ClusterNetworkPolicy**. The API delivers exactly the four capabilities outlined above, with a few concrete specifics worth calling out:
+Recognizing these scalability constraints, the SIG-Network Policy API group developed a native, multi-layered solution: ClusterNetworkPolicy. The API delivers exactly the four capabilities outlined above, with a few concrete specifics worth calling out:
 
 * **A Native Three-Layer Hierarchy:** It introduces distinct, sequentially evaluated resource tiers. ClusterNetworkPolicy (Admin tier) at the top for absolute guardrails, standard NetworkPolicy in the middle for developer agility, and ClusterNetworkPolicy (Baseline tier) at the bottom as a cluster-wide fallback safety net. Unlike namespace-jailed standard policies, the Admin and Baseline tiers apply across the entire cluster.
 * **Separation of Concerns:** Because ClusterNetworkPolicy is delivered as a new Custom Resource Definition (CRD) rather than a tweak to the existing NetworkPolicy type, standard Kubernetes RBAC governs who can interact with it. This ensures that only Security/Platform teams access ClusterNetworkPolicy resources, while DevOps teams work only with namespaced network policies.
-* **Numeric Precedence:** Policies feature explicit integer priorities. A policy with a lower integer value (e.g., 10) takes precedence over a policy with a higher value (e.g., 100), allowing for deterministic evaluation.
+* **Numeric Precedence:** Policies feature explicit integer priorities. A policy with a lower integer value (e.g., 10\) takes precedence over a policy with a higher value (e.g., 100), allowing for deterministic evaluation.
 * **Explicit Actions:** Rules are no longer purely additive. You can now design rules with explicit Accept, Deny, and Pass actions.
 
 This API completely shifts how cluster administrators manage traffic by introducing a native, three-tiered evaluation hierarchy:
@@ -59,11 +59,80 @@ This API completely shifts how cluster administrators manage traffic by introduc
 └────────────────────────────────────────────────────────┘
 ```
 
-**The Top Layer: ClusterNetworkPolicy (Admin tier)**: This is the high-priority tier controlled by cluster and security administrators. Rules here are evaluated first, and two of its three actions are *terminal*: an Accept or a Deny is a final verdict that bypasses the developer's NetworkPolicy layer entirely. A Deny here cannot be overridden by any developer manifest, but the same is true of Accept: if an admin explicitly accepts traffic, it is permitted regardless of what a developer policy would have decided. This is the crucial difference from a standard NetworkPolicy allow, which is *additive*. An Admin-tier Accept is an override, not a contribution. Only the third action, Pass, is non-terminal: it declines to decide and hands evaluation down to the next tier.
+**The Top Layer: ClusterNetworkPolicy (Admin tier):** This is the high-priority tier controlled by cluster and security administrators. Rules here are evaluated first, and two of its three actions are *terminal*: an Accept or a Deny is a final verdict that bypasses the developer's NetworkPolicy layer entirely. A Deny here cannot be overridden by any developer manifest, but the same is true of Accept: if an admin explicitly accepts traffic, it is permitted regardless of what a developer policy would have decided. This is the crucial difference from a standard NetworkPolicy allow, which is *additive*. An Admin-tier Accept is an override, not a contribution. Only the third action, Pass, is non-terminal: it declines to decide and hands evaluation down to the next tier.
 
-**The Middle Layer: Standard NetworkPolicy**: This is the traditional application-developer tier. It only kicks in if traffic wasn't explicitly allowed or denied by the ClusterNetworkPolicy in the Admin tier above it. This keeps developers agile, letting them connect their microservices without needing admin intervention. One subtlety to keep in mind: standard NetworkPolicy carries an *implicit deny* for any pod it selects. So traffic only falls through to the Baseline tier when no NetworkPolicy selects the workload at all. A pod that *is* selected but matches none of its Accept rules is already dropped here, and never reaches the Baseline tier below.
+As an example, the following ClusterNetworkPolicy can be used to allow DNS UDP traffic toward kube-dns from all namespaces:
 
-**The Bottom Layer: ClusterNetworkPolicy (Baseline tier)**: This is the cluster-scoped Baseline tier, meant for default fallbacks. It acts as the safety net after developer policies are checked. For example, if a developer forgets to secure their pod, this policy can enforce a default cluster-wide posture like "if no developer policy matches this traffic, deny all intra-cluster traffic by default."
+```
+apiVersion: policy.networking.k8s.io/v1alpha2
+kind: ClusterNetworkPolicy
+metadata:
+  name: allow-dns-to-kube-dns
+spec:
+  tier: Admin
+  priority: 100
+  subject:
+    namespaces: {}
+  egress:
+    - name: allow-dns
+      action: Accept
+      to:
+        - pods:
+            namespaceSelector:
+              matchLabels:
+                kubernetes.io/metadata.name: kube-system
+            podSelector:
+              matchLabels:
+                k8s-app: kube-dns
+      protocols:
+        - udp:
+            destinationPort:
+              number: 53
+```
+
+**The Middle Layer: Standard NetworkPolicy:** This is the traditional application-developer tier. It only kicks in if traffic wasn't explicitly allowed or denied by the ClusterNetworkPolicy in the Admin tier above it. This keeps developers agile, letting them connect their microservices without needing admin intervention. One subtlety to keep in mind: standard NetworkPolicy carries an *implicit deny* for any pod it selects. So traffic only falls through to the Baseline tier when no NetworkPolicy selects the workload at all. A pod that *is* selected but matches none of its Accept rules is already dropped here, and never reaches the Baseline tier below. The following network policy can be used to permit ingress HTTP traffic for the specific namespace.
+
+```
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+  metadata:
+    name: allow-http-ingress
+    namespace: awesome-app
+  spec:
+    podSelector:
+      matchLabels:
+        app: http-server
+    policyTypes:
+      - Ingress
+    ingress:
+      - ports:
+          - protocol: TCP
+            port: 80
+```
+
+**The Bottom Layer: ClusterNetworkPolicy (Baseline tier):** This is the cluster-scoped Baseline tier, meant for default fallbacks. It acts as the safety net after developer policies are checked. For example, if a developer forgets to secure their pod, this policy can enforce a default cluster-wide posture like "if no developer policy matches this traffic, deny all intra-cluster traffic by default.". The following ClusterNetworkPolicy would satisfy this requirement:
+
+```
+apiVersion: policy.networking.k8s.io/v1alpha2
+kind: ClusterNetworkPolicy
+metadata:
+  name: deny-all
+spec:
+  tier: Baseline
+  priority: 1
+  subject:
+    namespaces:
+      matchLabels: {}
+  ingress:
+  - name: deny-all-ingress
+    action: Deny
+    from:
+    - namespaces:
+        matchLabels: {}
+```
 
 Combined, these features provide a native, multi-level strategy for scaling enterprise cluster security far beyond the limitations of a flat configuration.
 
+## Extending the Model: Calico Tiers
+
+## While the native Kubernetes APIs introduces a better three-layer model approach to security, and some control over rule priority, enterprise environments often require finer granularity. Calico expands on this concept by offering unlimited policy tiers, allowing you to design an arbitrary number of custom evaluation layers. Calico tiers will be discussed in the next post.
