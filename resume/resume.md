@@ -11,7 +11,7 @@ Software and site reliability engineer passionate about building secure and reli
 - Developing and maintaining Project Calico, most widely adopted container networking & security solution to run seamlessly on on-prem data centers and public cloud (Azure, GCP, AWS)
 - Received the Technical Pinnacle Award (2025), Excellence Award (2025) for top technical contributions and domain leadership.
 
-### Policy Engine:
+#### Policy Engine:
 - Enhanced Calico policy engine by introducing tiered policies and kubernetes cluster network policies
 - Introduced stateless firewall capability in Calico eBPF data plane using XDP programs
 
