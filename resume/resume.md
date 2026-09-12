@@ -1,9 +1,9 @@
-*MAZDAK NASAB*
+# MAZDAK NASAB
 [mazdak.nasab@gmail.com](mailto:mazdak.nasab@gmail.com) | [github.com/mazdakn](http://github.com/mazdakn) | [linkedin.com/in/mazdakn](http://www.linkedin.com/in/mazdakn/)
 
 Software and site reliability engineer passionate about building secure and reliable distributed systems with over 15 years of experience designing and developing secure, robust and innovative network systems.
 
-**EXPERIENCE**
+## EXPERIENCE
 **Member of Technical Staff** | Tailscale, Vancouver, Canada | 2026 – Present
 * Developing networking features of tailscale.
 
@@ -26,8 +26,8 @@ Software and site reliability engineer passionate about building secure and reli
 * Improved BGP route advertisement by introducing route filtering based on different attributes
 
 * **Observability:**
-* Introduced network observability by using connection and policy information to generate flow logs
-* Developed a workload run time security solution by monitoring syscalls and events using eBPF
+** Introduced network observability by using connection and policy information to generate flow logs
+** Developed a workload run time security solution by monitoring syscalls and events using eBPF
 
 **Senior Site Reliability Engineer** **\- Network Specialist** | Ericsson, Sweden | 2017 – 2021
 
@@ -45,10 +45,10 @@ Software and site reliability engineer passionate about building secure and reli
 * Transformed a TCP/HTTP proxy to a highly available, performant and scalable virtual network function
 * Reduced deployment time from hours to minutes by automating the process using Python and Ansible
 
-**EDUCATION**
+## EDUCATION
 **MSc in Computer Science** | Network and Distributed Systems
 Chalmers University of Technology, Sweden | 2013
 
-**SKILLS**
+## SKILLS
 **Languages:** Go (Golang), C, Python, Lua, Ansible, Bash
 **Linux Network Stack :** eBPF/XDP, Netfilter(Iptables/Nftables), Routing, Traffic Control (TC), Socket API
