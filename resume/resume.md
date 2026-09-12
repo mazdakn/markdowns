@@ -22,7 +22,7 @@ Software and site reliability engineer passionate about building secure and reli
 
 - **Advanced Routing:**
   - Enhanced Calico to program all cluster routes without any routing protocol to help users experience to not deal with complex routing protocol, and also to improve Calico scalability
-  - Lead development of a userspace ARP responder to allow workloads and services reachability without any routing protocol.
+  - Lead development of a userspace ARP responder to allow reachability without any routing protocol.
   - Improved BGP route advertisement by introducing route filtering based on different attributes
 
 - **Observability:**
