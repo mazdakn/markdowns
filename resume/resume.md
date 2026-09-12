@@ -50,5 +50,5 @@ Software and site reliability engineer passionate about building secure and reli
 Chalmers University of Technology, Sweden | 2013
 
 ## SKILLS
-**Languages:** Go (Golang), C, Python, Lua, Ansible, Bash
+**Languages:** Go (Golang), C, Python, Lua, Ansible, Bash\
 **Linux Network Stack :** eBPF/XDP, Netfilter(Iptables/Nftables), Routing, Traffic Control (TC), Socket API
