@@ -1,21 +1,25 @@
-**MAZDAK NASAB**
+*MAZDAK NASAB*
 [mazdak.nasab@gmail.com](mailto:mazdak.nasab@gmail.com) | [github.com/mazdakn](http://github.com/mazdakn) | [linkedin.com/in/mazdakn](http://www.linkedin.com/in/mazdakn/)
 
 Software and site reliability engineer passionate about building secure and reliable distributed systems with over 15 years of experience designing and developing secure, robust and innovative network systems.
 
 **EXPERIENCE**
-**Staff Software Engineer / Core Developer of Project Calico** | Tigera, Vancouver, Canada | 2021 – Present
+**Member of Technical Staff** | Tailscale, Vancouver, Canada | 2026 – Present
+* Developing networking features of tailscale.
+
+**Staff Software Engineer / Core Developer of Project Calico** | Tigera, Vancouver, Canada | 2021 – 2026
 
 * Developing and maintaining Project Calico, most widely adopted container networking & security solution to run seamlessly on on-prem data centers and public cloud (Azure, GCP, AWS)
+* Received the Technical Pinnacle Award (2025), Excellence Award (2025) for top technical contributions and domain leadership.
 
-* **Policy Engine:**
-* Enhanced Calico policy engine by introducing tiered policies and kubernetes cluster network policies
-* Introduced stateless firewall capability in Calico eBPF data plane using XDP programs
+- **Policy Engine:**
+-- Enhanced Calico policy engine by introducing tiered policies and kubernetes cluster network policies
+-- Introduced stateless firewall capability in Calico eBPF data plane using XDP programs
 
-* **Egress Traffic Engineering:**
-* Designed and developed a policy-based egress control, allowing granular routing of pod traffic through specific egress gateways to satisfy strict compliance and security requirements
-* Designed and developed egress gateway functionality in Azure to control workload's outbound traffic
-* Enhanced Calico to classify egress traffic by setting DiffServe to allow network fabric to prioritise
+- **Egress Traffic Engineering:**
+-- Designed and developed a policy-based egress control, allowing granular routing of pod traffic through specific egress gateways to satisfy strict compliance and security requirements
+-- Designed and developed egress gateway functionality in Azure to control workload's outbound traffic
+-- Enhanced Calico to classify egress traffic by setting DiffServe to allow network fabric to prioritise
 
 * **Advanced Routing:**
 * Enhanced Calico to program all cluster routes without any routing protocol to help users experience to not deal with complex routing protocol, and also to improve Calico scalability
