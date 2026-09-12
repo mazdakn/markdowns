@@ -16,17 +16,17 @@ Software and site reliability engineer passionate about building secure and reli
   - Introduced stateless firewall capability in Calico eBPF data plane using XDP programs
 
 - **Egress Traffic Engineering:**
- - Designed and developed a policy-based egress control, allowing granular routing of pod traffic through specific egress gateways to satisfy strict compliance and security requirements
- - Designed and developed egress gateway functionality in Azure to control workload's outbound traffic
- - Enhanced Calico to classify egress traffic by setting DiffServe to allow network fabric to prioritise
+  - Designed and developed a policy-based egress control, allowing granular routing of pod traffic through specific egress gateways to satisfy strict compliance and security requirements
+  - Designed and developed egress gateway functionality in Azure to control workload's outbound traffic
+  - Enhanced Calico to classify egress traffic by setting DiffServe to allow network fabric to prioritise
 
 - **Advanced Routing:**
- - Enhanced Calico to program all cluster routes without any routing protocol to help users experience to not deal with complex routing protocol, and also to improve Calico scalability
- - Improved BGP route advertisement by introducing route filtering based on different attributes
+  - Enhanced Calico to program all cluster routes without any routing protocol to help users experience to not deal with complex routing protocol, and also to improve Calico scalability
+  - Improved BGP route advertisement by introducing route filtering based on different attributes
 
 - **Observability:**
- - Introduced network observability by using connection and policy information to generate flow logs
- - Developed a workload run time security solution by monitoring syscalls and events using eBPF
+  - Introduced network observability by using connection and policy information to generate flow logs
+  - Developed a workload run time security solution by monitoring syscalls and events using eBPF
 
 **Senior Site Reliability Engineer** **\- Network Specialist** | Ericsson, Sweden | 2017 – 2021
 - Designed and deployed virtual network services (firewalls, L4/L7 load balancers and proxies) for an IoT platform to serve & protect millions of devices
