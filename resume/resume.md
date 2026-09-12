@@ -20,9 +20,9 @@ Software and site reliability engineer passionate about building secure and reli
   - Designed and developed egress gateway functionality in Azure to control workload's outbound traffic
   - Enhanced Calico to classify egress traffic by setting DiffServe to allow network fabric to prioritise
 
-- **Advanced Routing:**
+- **Routing:**
   - Enhanced Calico to program all cluster routes without any routing protocol to help users experience to not deal with complex routing protocol, and also to improve Calico scalability
-  - Lead development of a userspace ARP responder to allow reachability without any routing protocol.
+  - Lead development of a userspace ARP/NDP responder to allow workloads and services reachability without any routing protocol.
   - Improved BGP route advertisement by introducing route filtering based on different attributes
 
 - **Observability:**
