@@ -46,7 +46,7 @@ Software and site reliability engineer passionate about building secure and reli
 * Reduced deployment time from hours to minutes by automating the process using Python and Ansible
 
 ## EDUCATION
-**MSc in Computer Science** | Network and Distributed Systems
+**MSc in Computer Science** | Network and Distributed Systems\
 Chalmers University of Technology, Sweden | 2013
 
 ## SKILLS
