@@ -8,8 +8,8 @@ Software and site reliability engineer passionate about building secure and reli
 - Developing networking features of tailscale.
 
 **Staff Software Engineer / Core Developer of Project Calico** | Tigera, Vancouver, Canada | 2021 – 2026
-- Developing and maintaining Project Calico, most widely adopted container networking & security solution to run seamlessly on on-prem data centers and public cloud (Azure, GCP, AWS)
-- Received the Technical Pinnacle Award (2025), Excellence Award (2025) for top technical contributions and domain leadership.
+- Developing and maintaining Project Calico, the most widely adopted container networking & security solution to run seamlessly on on-prem data centers and public cloud (Azure, GCP, AWS)
+- Received the Technical Pinnacle Award (2026), Excellence Award (2025) for top technical contributions and domain leadership.
 
 - **Policy Engine**:
   - Enhanced Calico policy engine by introducing tiered policies and kubernetes cluster network policies
@@ -18,7 +18,7 @@ Software and site reliability engineer passionate about building secure and reli
 - **Egress Traffic Engineering:**
   - Designed and developed a policy-based egress control, allowing granular routing of pod traffic through specific egress gateways to satisfy strict compliance and security requirements
   - Designed and developed egress gateway functionality in Azure to control workload's outbound traffic
-  - Enhanced Calico to classify egress traffic by setting DiffServe to allow network fabric to prioritise
+  - Enhanced Calico to classify egress traffic by setting DiffServ to allow network fabric to prioritise
 
 - **Routing:**
   - Enhanced Calico to program all cluster routes without any routing protocol to help users experience to not deal with complex routing protocol, and also to improve Calico scalability
