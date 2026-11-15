@@ -10,8 +10,8 @@ Please check out my [GitHub] profile to see my recent projects. For more informa
 ## Publications
 
 - [Assessing the Quality of Packet-Level Traces Collected on Internet Backbone Links](/articles/Assessing%20the%20Quality%20of%20Packet-Level%20Traces%20Collected%20on%20Internet%20Backbone%20Links.pdf)
-- [Hypervisor Integrity Measurement Assistant](/articles/CLOSER_2013_48_CR.pdf)
 - [Security Functions for Virtual Machines via Introspection (Master's Thesis)](/articles/chalmers%20-%20report.pdf)
+- [Hypervisor Integrity Measurement Assistant](/articles/CLOSER_2013_48_CR.pdf)
 
 
 
