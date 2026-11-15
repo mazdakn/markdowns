@@ -7,6 +7,12 @@ Currently, I'm a Senior Software Engineer at Tigera, developing and maintaining 
 open source solution for container networking and security.
 Please check out my [GitHub] profile to see my recent projects. For more information please refer to my [LinkedIn] page, and [resume].
 
+## Publications
+
+- [Assessing the Quality of Packet-Level Traces Collected on Internet Backbone Links](/articles/Assessing%20the%20Quality%20of%20Packet-Level%20Traces%20Collected%20on%20Internet%20Backbone%20Links.pdf)
+- [Hypervisor Integrity Measurement Assistant](/articles/CLOSER_2013_48_CR.pdf)
+- [Security Functions for Virtual Machines via Introspection (Master's Thesis)](/articles/chalmers%20-%20report.pdf)
+
 
 
 [Project Calico]: https://github.com/projectcalico/calico
