@@ -1,5 +1,3 @@
-# About Me
-
 ![Mazdak Nasab](/images/mazdak.png " ")
 
 I am a network and systems engineer with over 15 years of experience building secure, high-performance distributed systems, Linux kernel data planes, and cloud-native networking infrastructure.
