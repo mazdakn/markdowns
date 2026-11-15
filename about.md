@@ -9,6 +9,8 @@ Please check out my [GitHub] profile to see my recent projects. For more informa
 
 ## Publications
 
+- [Tiered Network Policy: Scaling Kubernetes Security](https://www.tigera.io/blog/tiered-network-policy-scaling-kubernetes-security/)
+- [How doNotTrack policies work in the Calico eBPF dataplane](https://www.tigera.io/blog/how-donottrack-policies-work-in-the-calico-ebpf-dataplane/)
 - [Assessing the Quality of Packet-Level Traces Collected on Internet Backbone Links](/articles/Assessing%20the%20Quality%20of%20Packet-Level%20Traces%20Collected%20on%20Internet%20Backbone%20Links.pdf)
 - [Security Functions for Virtual Machines via Introspection (Master's Thesis)](/articles/chalmers%20-%20report.pdf)
 - [Hypervisor Integrity Measurement Assistant](/articles/CLOSER_2013_48_CR.pdf)
