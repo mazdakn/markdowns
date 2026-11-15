@@ -1,14 +1,5 @@
----
-title: About Me
-date: 2025-03-27
-sidebar: true
-toc: false
-showdate: false
-showreadtime: false
-showshare: false
-aliases:
-  - /about/
----
+# About Me
+
 ![Mazdak Nasab](/images/mazdak.png " ")
 
 I am a site reliability engineer and system developer with specialization in network security.
