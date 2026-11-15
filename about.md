@@ -2,10 +2,11 @@
 
 ![Mazdak Nasab](/images/mazdak.png " ")
 
-I am a site reliability engineer and system developer with specialization in network security.
-Currently, I'm a Senior Software Engineer at Tigera, developing and maintaining [Project Calico], the most widely deployed 
-open source solution for container networking and security.
-Please check out my [GitHub] profile to see my recent projects. For more information please refer to my [LinkedIn] page, and [resume].
+I am a network and systems engineer with over 15 years of experience building secure, high-performance distributed systems, Linux kernel data planes, and cloud-native networking infrastructure.
+
+Currently, I am a Member of Technical Staff at [Tailscale]. Previously, I was a Staff Software Engineer at [Tigera] and a core maintainer of [Project Calico], where I architected Kubernetes networking, routing, and eBPF/XDP security features. Before that, I built and secured large-scale network infrastructure at [Ericsson] in Sweden. I hold an M.Sc. in Computer Science (Networks & Distributed Systems) from [Chalmers University of Technology].
+
+Check out my [GitHub] for recent work, or connect with me on [LinkedIn]. For a full overview of my background, see my [resume].
 
 ## Publications
 
@@ -17,7 +18,11 @@ Please check out my [GitHub] profile to see my recent projects. For more informa
 
 
 
+[Tailscale]: https://tailscale.com
+[Tigera]: https://www.tigera.io
 [Project Calico]: https://github.com/projectcalico/calico
+[Ericsson]: https://www.ericsson.com
+[Chalmers University of Technology]: https://www.chalmers.se/en/
 [GitHub]: https://github.com/mazdakn
 [LinkedIn]: https://www.linkedin.com/in/mazdakn/
 [resume]: https://drive.google.com/file/d/1HOWM9vcwScF6BEWcyVe9Dp5uQLK8VJUp/view?usp=sharing
